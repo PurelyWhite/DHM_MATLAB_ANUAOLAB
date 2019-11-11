@@ -1,4 +1,4 @@
-classdef Camera < handle
+classdef camera < handle
     properties (Access = public)
         mode
         vid         % video object
@@ -6,7 +6,7 @@ classdef Camera < handle
         blackfly_s_cam = 'mwspinnakerimaq_r2019b';  % to-do: create settings
     end
     methods
-        function obj = Camera(cam_mode, exposure)
+        function obj = camera(cam_mode, exposure)
             hw_status = imaqhwinfo;
             if ismember(obj.blackfly_s_cam, hw_status.InstalledAdaptors)
                 obj.mode = cam_mode;
