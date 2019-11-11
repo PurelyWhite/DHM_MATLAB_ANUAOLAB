@@ -16,7 +16,7 @@ classdef Camera < handle
                 obj.vid.LoggingMode = 'disk';
                 obj.vid.ROIPosition = [512 384 1024 768];
                 triggerconfig(obj.vid, 'immediate');
-                                           
+                
                 obj.src = getselectedsource(obj.vid);
                 obj.src.AdcBitDepth = 'Bit12';
                 obj.src.AcquisitionFrameRateEnable = 'True';
@@ -42,8 +42,10 @@ classdef Camera < handle
                 obj.src.DeviceLinkThroughputLimit = 500000000;
                 obj.src.ReverseX = 'False';
                 obj.src.ReverseY = 'False';
-                obj.vid.DiskLogger = VideoWriter('default.avi', 'Grayscale AVI');
-                obj.vid.DiskLogger.FrameRate = obj.src.AcquisitionResultingFrameRate;
+                
+                diskLogger = VideoWriter('default.avi', 'Grayscale AVI');
+                diskLogger.FrameRate = obj.src.AcquisitionResultingFrameRate;
+                obj.vid.DiskLogger = diskLogger;
             end
         end
     end
