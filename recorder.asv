@@ -1,0 +1,17 @@
+classdef recorder
+    methods
+        function start(camera)
+           if exist(camera.vid, 'var')
+               camera.diskLogger.FrameRate = camera.src.AcquisitionResultingFrameRate;
+               start(app.vid);
+            end
+        end
+        function stop(camera)
+            if exist(camera.vid, 'var')
+                stop(camera.vid);
+            end
+        end
+        function 
+    end
+end
+            

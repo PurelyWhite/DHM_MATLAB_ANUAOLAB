@@ -1,0 +1,24 @@
+classdef Camera
+    properties (Access = public)
+        mode
+        vid         % video object
+        diskLogger % disk object
+        src         % record object
+        exp_time    % exposure time
+        path
+        blackfly_s_cam = 'mwspinnakerimaq_r2019b';  % to-do: create settings
+    end
+    methods
+        function obj = Camera(cam_mode)
+            hw_status = imaqhwinfo;
+            if ismember(obj.blackfly_s_cam, hw_status.InstalledAdaptors)
+                obj.mode = cam_mode;
+                obj.vid = videoinput(obj.blackfly_s_cam, 1, obj.mode);
+                obj.vid.FramesPerTrigger = Inf;
+                obj.vid.ReturnedColorspace = 'grayscale';
+                obj.vid.LoggingMode = 'disk';
+                obj.vid.ROIPosition = [512 384 1024 768];
+            end
+        end
+    end
+end
