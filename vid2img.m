@@ -30,10 +30,10 @@ classdef vid2img < handle
             for count = start_frame : frame_interval : end_frame
                 frame = read(video, count);
                 img_original = frame;
-                img_original(roi(2) : roi(2) + roi(4) - 1, roi(1) : roi(1) + line_width) = 255;
-                img_original(roi(2) : roi(2) + roi(4) - 1, roi(1) + roi(3) - 1 - line_width : roi(1) + roi(3) - 1) = 255;
-                img_original(roi(2) : roi(2) + line_width, roi(1) : roi(1) + roi(3) - 1) = 255;
-                img_original(roi(2) + roi(4) - 1 - line_width : roi(2) + roi(4) - 1, roi(1) : roi(1) + roi(3) - 1) = 255;
+                img_original(roi(2) : roi(2) + roi(4) - 1, roi(1) : roi(1) + line_width) = 255; % right
+                img_original(roi(2) : roi(2) + roi(4) - 1, roi(1) + roi(3) - 1 - line_width : roi(1) + roi(3) - 1) = 255; % left
+                img_original(roi(2) : roi(2) + line_width, roi(1) : roi(1) + roi(3) - 1) = 255; % top
+                img_original(roi(2) + roi(4) - 1 - line_width : roi(2) + roi(4) - 1, roi(1) : roi(1) + roi(3) - 1) = 255; % bot
                 img_cropped = imcrop(frame, [roi(1) roi(2) roi(3) roi(4)]);
                 imwrite(img_original, [save_folder '\original\' 'original_' int2str(count), '.tif']);
                 imwrite(img_cropped, [save_folder '\cropped\' 'cropped_' int2str(count), '.tif']);

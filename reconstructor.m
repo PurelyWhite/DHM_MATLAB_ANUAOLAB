@@ -17,12 +17,14 @@ classdef reconstructor < handle
             
         end
         
-        function [centreimg,first_order] = manual_crop(~, preview, fftimg)
-            figure('name', 'Manual FFT Cropping');
-            imshow(preview);
-            roi_manual = drawrectangle;
-            first_order = floor(roi_manual.Position);
-            close 'Manual FFT Cropping';
+        function [centreimg,first_order] = manual_crop(~, batch_process, preview, fftimg, first_order)
+            if batch_process == 1
+                figure('name', 'Manual FFT Cropping');
+                imshow(preview);
+                roi_manual = drawrectangle;
+                first_order = floor(roi_manual.Position);
+                close 'Manual FFT Cropping';
+            end
             imgsize = size(fftimg); %determine image size
             fftimgcrop = fftimg(first_order(2):first_order(2) + first_order(4), first_order(1):first_order(1) + first_order(3)); % locate first order
             centreimg = zeros(imgsize(1), imgsize(2)); % create a black image for placing first order
