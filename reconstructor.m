@@ -36,7 +36,7 @@ classdef reconstructor < handle
             global_thresh = graythresh(logimg_filtered);
             
             imgsize = size(logimgmaxmin); %determine image size
-
+            
             % seperate noise region and order region
             small_region = round((imgsize(1)/noise_level) * (imgsize(2)/noise_level)); % noise
             big_region = round((imgsize(1)/2) * (imgsize(2)/2));
@@ -136,7 +136,7 @@ classdef reconstructor < handle
                 region_box_dummy(1) : (region_box_dummy(1) + region_box_dummy(3))) = window;
         end
         
-        function [intensity_no_curve, phase_unwrap_no_curve, thickness, lower_limit, upper_limit] = process(~, center_fft, uplimit, lowlimit, invert, wavelength, ri, pixel_size)
+        function [intensity_no_curve, phase_unwrap_no_curve, thickness, lower_limit, upper_limit, frame_peak_height, frame_volume] = process(~, batch_process, center_fft, uplimit, lowlimit, invert, wavelength, ri, pixel_size)
             
             % reconstruct = ifft2(fftshift(centreimg)); % inverse fourier transform
             reconstructed = ifft2(ifftshift(center_fft));
@@ -184,6 +184,15 @@ classdef reconstructor < handle
             % resize thickness based on pixel size
             thickness = imresize(thickness, pixel_size);
             
+            if batch_process == 1
+                d_xy = pixel_size;
+                frame_peak_height = max(thickness, [], 'all');
+                frame_volume = sum(thickness * d_xy * d_xy, 'all');
+            else
+                frame_peak_height = [];
+                frame_volume = [];
+            end
+            
             % Upper/lower colorbar limit
             if uplimit == 0
                 upper_limit = max(thickness, [], 'all');
@@ -193,5 +202,53 @@ classdef reconstructor < handle
             
             lower_limit = min(thickness, [], 'all');
         end
+        
+        function [up, save_folder, image_folder_path] = batch_make_folder(~, desktop_path, image_folder_path, save_folder_name, save_height, save_volume)
+            up = dir(strcat(image_folder_path, '\*.tif'));
+            save_folder = strcat(desktop_path, save_folder_name);
+            mkdir(save_folder);
+            mkdir([save_folder '\intensity']);
+            mkdir([save_folder '\thickness']);
+            mkdir([save_folder '\fft']);
+            mkdir([save_folder '\mesh']);
+            
+            if save_height == 1
+                mkdir([save_folder '\thickness_data']);
+            end
+            
+            if save_volume == 1
+                mkdir([save_folder '\volume_data']);
+            end
+        end
+        
+        function [peak_height, volume, dim] = height_volume_data(~, up)
+            peak_height = zeros(length(up), 2);
+            volume = zeros(length(up), 2);
+            dim = [.2 .5 .3 .3];
+        end
+        
+        function [height_array, volume_array] = single_frame_data(~, file, save_height, save_volume, save_folder, count, height, height_array, volume, volume_array, thickness)
+            if save_height == 1
+                writematrix(thickness, [save_folder '\thickness_data\' erase(file, '.tif') '.csv']);
+                height_array(count, 1) = count;
+                height_array(count, 2) = height;
+            end
+            
+            if save_volume == 1
+                volume_array(count, 1) = count;
+                volume_array(count, 2) = volume;
+            end
+        end
+        
+        function all_frame_data(~, save_height, save_volume, height, volume, save_folder)
+            if save_height == 1
+                writematrix(height, [save_folder '\thickness_data\peak_height.csv']);
+            end
+            
+            if save_volume == 1
+                writematrix(volume, [save_folder '\volume_data\volume.csv']);
+            end
+        end
+        
     end
 end
