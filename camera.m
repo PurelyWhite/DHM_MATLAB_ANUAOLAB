@@ -14,7 +14,7 @@ classdef camera < handle
                 obj.vid.FramesPerTrigger = Inf;
                 obj.vid.ReturnedColorspace = 'grayscale';
                 obj.vid.LoggingMode = 'disk';
-                obj.vid.ROIPosition = [512 384 1024 768];
+                obj.vid.ROIPosition = [384 368 1280 800];
                 triggerconfig(obj.vid, 'immediate');
                 
                 obj.src = getselectedsource(obj.vid);

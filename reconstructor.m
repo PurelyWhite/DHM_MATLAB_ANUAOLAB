@@ -18,9 +18,9 @@ classdef reconstructor < handle
         end
         
         function [centreimg,first_order] = manual_crop(~, batch_process, preview, fftimg, first_order)
-            if batch_process == 1
+            if batch_process <= 1
                 figure('name', 'Manual FFT Cropping');
-                imshow(preview);
+                imagesc(preview);
                 roi_manual = drawrectangle;
                 first_order = floor(roi_manual.Position);
                 close 'Manual FFT Cropping';
@@ -158,6 +158,11 @@ classdef reconstructor < handle
                 phase_unwrap = - phase_unwrap;
             end
             
+            imgsize = size(center_fft);
+            resize = 10;
+            intensity = intensity(resize:(imgsize(1)-resize), resize:(imgsize(2)-resize));
+            phase_unwrap = phase_unwrap(resize:(imgsize(1)-resize), resize:(imgsize(2)-resize));
+
             % curve removal
             curve_phase = curve(phase_unwrap);
             curve_intensity = curve(intensity);
@@ -173,6 +178,9 @@ classdef reconstructor < handle
             % caution!!! set negative thickness to 0
             if lowlimit == 1
                 thickness(thickness < 0) = 0;
+                if wavelength == 0
+                    phase_unwrap_no_curve(phase_unwrap_no_curve < 0) = 0;
+                end
             end
             
             % apply median filter for 5 neighbouring pixels
@@ -202,7 +210,11 @@ classdef reconstructor < handle
                 upper_limit = uplimit;
             end
             
-            lower_limit = min(thickness, [], 'all');
+            if wavelength == 0
+                lower_limit = min(phase_unwrap_no_curve, [], 'all');
+            else
+                lower_limit = min(thickness, [], 'all');
+            end
         end
         
         function [up, save_folder, image_folder_path] = batch_make_folder(~, desktop_path, image_folder_path, save_folder_name, save_height, save_volume)
