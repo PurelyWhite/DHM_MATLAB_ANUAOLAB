@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.apptool" plugin-version="1.0">
-  <configuration build-checksum="1233063414" file="C:\Users\DISCAPE\Documents\GitHub\DHM_MATLAB_ANUAOLAB\DHM_with_Blackfly_S.prj" location="C:\Users\DISCAPE\Documents\GitHub\DHM_MATLAB_ANUAOLAB" name="DHM_with_Blackfly_S" target="target.mlapps" target-name="Package App">
+  <configuration build-checksum="2965537089" file="C:\Users\Tienan Xu\Documents\DO_NOT_DELETE\DHM_MATLAB_ANUAOLAB\DHM_with_Blackfly_S.prj" location="C:\Users\Tienan Xu\Documents\DO_NOT_DELETE\DHM_MATLAB_ANUAOLAB" name="DHM_with_Blackfly_S" target="target.mlapps" target-name="Package App">
     <param.appname>DHM_with_Blackfly_S</param.appname>
     <param.authnamewatermark>Tienan Xu</param.authnamewatermark>
     <param.email />
@@ -8,8 +8,8 @@
     <param.icons />
     <param.summary>A comprehensive program for Digital Holography Microscopy using FLIR BFS-U3-32S4 camera.</param.summary>
     <param.description />
-    <param.screenshot>C:\Users\DISCAPE\AppData\Local\Temp\tp207a50c2_39e0_451a_9554_fa68c2504e21.png</param.screenshot>
-    <param.version>2.1</param.version>
+    <param.screenshot>C:\Users\Tienan Xu\AppData\Local\Temp\tpe513b1c1_06a1_41e4_8b52_9a76461721dd.png</param.screenshot>
+    <param.version>2.2</param.version>
     <param.products.name />
     <param.products.id />
     <param.products.version />
@@ -43,7 +43,7 @@
     <fileset.resources />
     <fileset.package />
     <build-deliverables>
-      <file location="C:\Users\DISCAPE\Documents\GitHub" name="DHM_MATLAB_ANUAOLAB" optional="false">C:\Users\DISCAPE\Documents\GitHub\DHM_MATLAB_ANUAOLAB</file>
+      <file location="C:\Users\Tienan Xu\Documents\DO_NOT_DELETE" name="DHM_MATLAB_ANUAOLAB" optional="false">C:\Users\Tienan Xu\Documents\DO_NOT_DELETE\DHM_MATLAB_ANUAOLAB</file>
     </build-deliverables>
     <workflow />
     <matlab>
