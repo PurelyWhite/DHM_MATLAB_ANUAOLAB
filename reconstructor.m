@@ -3,17 +3,24 @@ classdef reconstructor < handle
         function obj = reconstructor()
         end
         
-        function [imgo, logimgmaxmin, fftimg] = load_img(~,path)
-            imgo = imread(path); % open hologram
-            [~, ~, img_dim] = size(imgo);
-            if img_dim ~= 1
-                img = double(rgb2gray(imgo)); % double format
+        function [imgo, logimgmaxmin, fftimg] = load_img(~,path,open)
+            if open
+                imgo = imread(path); % open hologram
+                [~, ~, img_dim] = size(imgo);
+                if img_dim ~= 1
+                    img = double(rgb2gray(imgo)); % double format
+                else
+                    img = double(imgo);
+                end
+                fftimg = fftshift(fft2(img)); % 2d fourier transform and translate to centre
+                logimg = log(abs(fftimg)); % for illustration purpose only?
+                logimgmaxmin = (logimg - min(min(logimg)))/(max(max(logimg))-min(min(logimg))); % normalise
             else
-                img = double(imgo);
+                imgo = path;
+                fftimg = fftshift(fft2(path)); % 2d fourier transform and translate to centre
+                logimg = log(abs(fftimg)); % for illustration purpose only?
+                logimgmaxmin = (logimg - min(min(logimg)))/(max(max(logimg))-min(min(logimg))); % normalise
             end
-            fftimg = fftshift(fft2(img)); % 2d fourier transform and translate to centre
-            logimg = log(abs(fftimg)); % for illustration purpose only?
-            logimgmaxmin = (logimg - min(min(logimg)))/(max(max(logimg))-min(min(logimg))); % normalise
             
         end
         
@@ -233,6 +240,26 @@ classdef reconstructor < handle
             if save_volume == 1
                 mkdir([save_folder '\volume_data']);
             end
+        end
+        
+        function [video, total_frames, save_folder, peak_height, volume, dim] = video_direct_batch_processing(~, desktop_path, save_folder_name, video_path, start, ending, skip)
+            save_folder = strcat(desktop_path, save_folder_name);
+            mkdir(save_folder);
+            mkdir([save_folder '\Hologram']);
+            mkdir([save_folder '\intensity']);
+            mkdir([save_folder '\thickness']);
+            mkdir([save_folder '\fft']);
+            mkdir([save_folder '\mesh']);
+            mkdir([save_folder '\thickness_data']);
+            mkdir([save_folder '\volume_data']);
+            
+            video = VideoReader(video_path);
+            video.CurrentTime = start;
+            total_frames = video.FrameRate * (ending - start);
+            
+            peak_height = zeros(ceil(total_frames/skip), 2);
+            volume = zeros(ceil(total_frames/skip), 2);
+            dim = [.2 .5 .3 .3];
         end
         
         function [peak_height, volume, dim] = height_volume_data(~, up)
