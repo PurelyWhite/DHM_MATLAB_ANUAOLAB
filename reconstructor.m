@@ -169,7 +169,7 @@ classdef reconstructor < handle
             resize = 10;
             intensity = intensity(resize:(imgsize(1)-resize), resize:(imgsize(2)-resize));
             phase_unwrap = phase_unwrap(resize:(imgsize(1)-resize), resize:(imgsize(2)-resize));
-
+            
             % curve removal
             curve_phase = curve(phase_unwrap);
             curve_intensity = curve(intensity);
@@ -289,6 +289,13 @@ classdef reconstructor < handle
             if save_volume == 1
                 writematrix(volume, [save_folder '\volume_data\volume.csv']);
             end
+        end
+        
+        function [show_crop_region] = show_fft_crop(~, fftlogimg, roi, uiaxes)
+            show_crop_region = fftlogimg;
+            show_crop_region(roi(2):roi(2) + roi(4), roi(1):roi(1) + roi(3)) = ...
+                show_crop_region(roi(2):roi(2) + roi(4), roi(1):roi(1) + roi(3)) + 0.2;
+            imshow(show_crop_region, 'parent', uiaxes);
         end
         
     end
