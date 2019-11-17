@@ -149,7 +149,7 @@ classdef reconstructor < handle
             
             % reconstruct = ifft2(fftshift(centreimg)); % inverse fourier transform
             reconstructed = ifft2(ifftshift(center_fft));
-            intensity = abs(reconstructed); % intensity
+            intensity = reconstructed.*conj(reconstructed); % intensity
             phase = angle(reconstructed); % phase
             
             % unwrap
@@ -172,9 +172,9 @@ classdef reconstructor < handle
             
             % curve removal
             curve_phase = curve(phase_unwrap);
-            curve_intensity = curve(intensity);
+            % curve_intensity = curve(intensity);
             phase_unwrap_no_curve = (phase_unwrap - curve_phase);
-            intensity_no_curve = intensity - curve_intensity;
+            intensity_no_curve = intensity; % - curve_intensity;
             
             % thickness calculation
             wavelength = wavelength * 10^(-3);
