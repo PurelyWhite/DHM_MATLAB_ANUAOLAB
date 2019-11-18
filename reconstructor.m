@@ -6,22 +6,18 @@ classdef reconstructor < handle
         function [imgo, logimgmaxmin, fftimg] = load_img(~,path,open)
             if open
                 imgo = imread(path); % open hologram
-                [~, ~, img_dim] = size(imgo);
-                if img_dim ~= 1
-                    img = double(rgb2gray(imgo)); % double format
-                else
-                    img = double(imgo);
-                end
-                fftimg = fftshift(fft2(img)); % 2d fourier transform and translate to centre
-                logimg = log(abs(fftimg)); % for illustration purpose only?
-                logimgmaxmin = (logimg - min(min(logimg)))/(max(max(logimg))-min(min(logimg))); % normalise
             else
                 imgo = path;
-                fftimg = fftshift(fft2(path)); % 2d fourier transform and translate to centre
-                logimg = log(abs(fftimg)); % for illustration purpose only?
-                logimgmaxmin = (logimg - min(min(logimg)))/(max(max(logimg))-min(min(logimg))); % normalise
             end
-            
+            [~, ~, img_dim] = size(imgo);
+            if img_dim ~= 1
+                img = double(rgb2gray(imgo)); % double format
+            else
+                img = double(imgo);
+            end
+            fftimg = fftshift(fft2(img)); % 2d fourier transform and translate to centre
+            logimg = log(abs(fftimg)); % for illustration purpose only?
+            logimgmaxmin = (logimg - min(min(logimg)))/(max(max(logimg))-min(min(logimg))); % normalise
         end
         
         function [centreimg,first_order] = manual_crop(~, batch_process, preview, fftimg, first_order)
