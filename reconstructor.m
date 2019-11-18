@@ -176,7 +176,7 @@ classdef reconstructor < handle
             wavelength = wavelength * 10^(-3);
             refractive_index_diff = ri;
             factor = wavelength/(2*pi*refractive_index_diff);
-            thickness = (factor * phase_unwrap_no_curve)';
+            thickness = (factor * phase_unwrap_no_curve);
             
             % caution!!! set negative thickness to 0
             if lowlimit == 1
@@ -238,7 +238,7 @@ classdef reconstructor < handle
             end
         end
         
-        function [video, total_frames, save_folder, peak_height, volume, dim] = video_direct_batch_processing(~, desktop_path, save_folder_name, video_path, start, ending, skip)
+        function [video, start_frame, total_frames, save_folder, peak_height, volume, dim] = video_direct_batch_processing(~, desktop_path, save_folder_name, video_path, start, ending, skip)
             save_folder = strcat(desktop_path, save_folder_name);
             mkdir(save_folder);
             mkdir([save_folder '\Hologram']);
@@ -250,7 +250,7 @@ classdef reconstructor < handle
             mkdir([save_folder '\volume_data']);
             
             video = VideoReader(video_path);
-            video.CurrentTime = start;
+            start_frame = start * video.FrameRate + 1;
             total_frames = video.FrameRate * (ending - start);
             
             peak_height = zeros(ceil(total_frames/skip), 2);
