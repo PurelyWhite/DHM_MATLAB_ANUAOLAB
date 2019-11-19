@@ -3,8 +3,12 @@ classdef reconstructor < handle
         function obj = reconstructor()
         end
         
-        function [imgo, logimgmaxmin, fftimg] = load_img(~,path)
-            imgo = imread(path); % open hologram
+        function [imgo, logimgmaxmin, fftimg] = load_img(~,path,open)
+            if open
+                imgo = imread(path); % open hologram
+            else
+                imgo = path;
+            end
             [~, ~, img_dim] = size(imgo);
             if img_dim ~= 1
                 img = double(rgb2gray(imgo)); % double format
@@ -14,7 +18,6 @@ classdef reconstructor < handle
             fftimg = fftshift(fft2(img)); % 2d fourier transform and translate to centre
             logimg = log(abs(fftimg)); % for illustration purpose only?
             logimgmaxmin = (logimg - min(min(logimg)))/(max(max(logimg))-min(min(logimg))); % normalise
-            
         end
         
         function [centreimg,first_order] = manual_crop(~, batch_process, preview, fftimg, first_order)
@@ -142,7 +145,7 @@ classdef reconstructor < handle
             
             % reconstruct = ifft2(fftshift(centreimg)); % inverse fourier transform
             reconstructed = ifft2(ifftshift(center_fft));
-            intensity = abs(reconstructed); % intensity
+            intensity = reconstructed.*conj(reconstructed); % intensity
             phase = angle(reconstructed); % phase
             
             % unwrap
@@ -162,18 +165,18 @@ classdef reconstructor < handle
             resize = 10;
             intensity = intensity(resize:(imgsize(1)-resize), resize:(imgsize(2)-resize));
             phase_unwrap = phase_unwrap(resize:(imgsize(1)-resize), resize:(imgsize(2)-resize));
-
+            
             % curve removal
             curve_phase = curve(phase_unwrap);
-            curve_intensity = curve(intensity);
+            % curve_intensity = curve(intensity);
             phase_unwrap_no_curve = (phase_unwrap - curve_phase);
-            intensity_no_curve = intensity - curve_intensity;
+            intensity_no_curve = intensity; % - curve_intensity;
             
             % thickness calculation
             wavelength = wavelength * 10^(-3);
             refractive_index_diff = ri;
             factor = wavelength/(2*pi*refractive_index_diff);
-            thickness = (factor * phase_unwrap_no_curve)';
+            thickness = (factor * phase_unwrap_no_curve);
             
             % caution!!! set negative thickness to 0
             if lowlimit == 1
@@ -235,6 +238,26 @@ classdef reconstructor < handle
             end
         end
         
+        function [video, start_frame, total_frames, save_folder, peak_height, volume, dim] = video_direct_batch_processing(~, desktop_path, save_folder_name, video_path, start, ending, skip)
+            save_folder = strcat(desktop_path, save_folder_name);
+            mkdir(save_folder);
+            mkdir([save_folder '\Hologram']);
+            mkdir([save_folder '\intensity']);
+            mkdir([save_folder '\thickness']);
+            mkdir([save_folder '\fft']);
+            mkdir([save_folder '\mesh']);
+            mkdir([save_folder '\thickness_data']);
+            mkdir([save_folder '\volume_data']);
+            
+            video = VideoReader(video_path);
+            start_frame = start * video.FrameRate + 1;
+            total_frames = video.FrameRate * (ending - start);
+            
+            peak_height = zeros(ceil(total_frames/skip), 2);
+            volume = zeros(ceil(total_frames/skip), 2);
+            dim = [.2 .5 .3 .3];
+        end
+        
         function [peak_height, volume, dim] = height_volume_data(~, up)
             peak_height = zeros(length(up), 2);
             volume = zeros(length(up), 2);
@@ -262,6 +285,13 @@ classdef reconstructor < handle
             if save_volume == 1
                 writematrix(volume, [save_folder '\volume_data\volume.csv']);
             end
+        end
+        
+        function [show_crop_region] = show_fft_crop(~, fftlogimg, roi, uiaxes)
+            show_crop_region = fftlogimg;
+            show_crop_region(roi(2):roi(2) + roi(4), roi(1):roi(1) + roi(3)) = ...
+                show_crop_region(roi(2):roi(2) + roi(4), roi(1):roi(1) + roi(3)) + 0.2;
+            imshow(show_crop_region, 'parent', uiaxes);
         end
         
     end
