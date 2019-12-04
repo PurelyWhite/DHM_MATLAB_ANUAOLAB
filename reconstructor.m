@@ -3,9 +3,12 @@ classdef reconstructor < handle
         function obj = reconstructor()
         end
         
-        function [imgo, logimgmaxmin, fftimg] = load_img(~,path,open)
+        function [imgo, logimgmaxmin, fftimg] = load_img(~,path,open,roi)
             if open
                 imgo = imread(path); % open hologram
+                if roi
+                    imgo = imcrop(imgo, [roi(1) roi(2) roi(3) roi(4)]);
+                end
             else
                 imgo = path;
             end
