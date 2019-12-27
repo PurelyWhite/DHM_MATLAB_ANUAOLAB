@@ -150,9 +150,9 @@ classdef reconstructor < handle
             reconstructed = ifft2(ifftshift(center_fft));
             intensity = reconstructed.*conj(reconstructed); % intensity
             phase = angle(reconstructed); % phase
-            
+            image(phase);
             % unwrap
-            phase_unwrap = double(Miguel_2D_unwrapper(single(phase)));
+            phase_unwrap = double(GPU_Miguel_2D_unwrapper(single(phase)));
             
             %             % resize image by 10 pixel
             %             resize = 1;
