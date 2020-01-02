@@ -152,7 +152,11 @@ classdef reconstructor < handle
             phase = angle(reconstructed); % phase
             image(phase);
             % unwrap
-            phase_unwrap = double(GPU_Miguel_2D_unwrapper(single(phase)));
+            if gpuDeviceCount > 0
+                phase_unwrap = double(LeastSquares_Unwrapper(single(phase)));
+            else
+                phase_unwrap = double(Miguel_2D_unwrapper(single(phase)));
+            end
             
             %             % resize image by 10 pixel
             %             resize = 1;
