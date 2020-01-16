@@ -174,7 +174,7 @@ classdef reconstructor < handle
             phase_unwrap = phase_unwrap(resize:(imgsize(1)-resize), resize:(imgsize(2)-resize));
             
             % curve removal
-            curve_phase = curve(phase_unwrap);
+            curve_phase = downsampled_curve(phase_unwrap);
             % curve_intensity = curve(intensity);
             phase_unwrap_no_curve = (phase_unwrap - curve_phase);
             intensity_no_curve = intensity; % - curve_intensity;
