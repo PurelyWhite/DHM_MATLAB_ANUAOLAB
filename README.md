@@ -6,7 +6,7 @@ Matlab App for Off-Axis Digital Holographic Microscopy phase retrieval. The prog
 
 ## Installation & Running
 
-1. Download latest version [Releases](https://github.com/PurelyWhite/DHM_MATLAB_ANUAOLAB/releases) of "mlappinstall" file.
+1. Download latest version of "mlappinstall" file from [Releases](https://github.com/PurelyWhite/DHM_MATLAB_ANUAOLAB/releases)
 2. Run installer
 3. In Matlab, open Apps tab, expand app list and click on DHM with Blackfly S.
 
