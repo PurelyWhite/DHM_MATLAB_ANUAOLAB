@@ -14,10 +14,12 @@ Matlab App for Off-Axis Digital Holographic Microscopy phase retrieval. The prog
 ### MATLAB Version
 MATLAB R2019b preferred.
 
-For imaging using FLIR Blackfly S, MATLAB R2019b is required, with FLIR Spinnaker support installed (https://au.mathworks.com/matlabcentral/fileexchange/69202-flir-spinnaker-support-by-image-acquisition-toolbox).
+For imaging using FLIR Blackfly S, MATLAB R2019b is required, with [FLIR Spinnaker support](https://au.mathworks.com/matlabcentral/fileexchange/69202-flir-spinnaker-support-by-image-acquisition-toolbox) installed.
 
 For processing, MATLAB R2019a and above is required.
 
 ## GPU Processing
 
 If a CUDA supported Nvidia GPU is available, the program will automatically use the GPU where appropriate.
+
+CUDA can be installed via the the [Nvidia site](https://developer.nvidia.com/cuda-downloads).
