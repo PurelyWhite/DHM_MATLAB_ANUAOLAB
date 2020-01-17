@@ -1,4 +1,4 @@
-# DHM_MATLAB_ANUAOLAB
+# MATLAB Phase Retrieval for Digital Holographic Microscopy
 
 ## About
 
