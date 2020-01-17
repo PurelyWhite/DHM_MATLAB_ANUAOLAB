@@ -23,3 +23,7 @@ For processing, MATLAB R2019a and above is required.
 If a CUDA supported Nvidia GPU is available, the program will automatically use the GPU where appropriate.
 
 CUDA can be installed via the the [Nvidia site](https://developer.nvidia.com/cuda-downloads).
+
+## Publications
+
+For further usage details, please visit the [Wiki](https://github.com/PurelyWhite/DHM_MATLAB_ANUAOLAB/wiki) or our [SPIE conference proceeding](https://www.spiedigitallibrary.org/conference-proceedings-of-spie/11202/112021C/Software-package-for-off-axis-digital-holographic-microscopy-imaging-processing/10.1117/12.2539541.full)
