@@ -27,3 +27,7 @@ CUDA can be installed via the the [Nvidia site](https://developer.nvidia.com/cud
 ## Publications
 
 For further usage details, please visit the [Wiki](https://github.com/PurelyWhite/DHM_MATLAB_ANUAOLAB/wiki) or our [SPIE conference proceeding](https://www.spiedigitallibrary.org/conference-proceedings-of-spie/11202/112021C/Software-package-for-off-axis-digital-holographic-microscopy-imaging-processing/10.1117/12.2539541.full)
+
+If you have found this program to be useful in your research, we would be grateful if you could cite us using:
+
+Tienan Xu, Xuefei He, Zhiduo Zhang, Samantha Montague, Elizabeth Gardiner, and Woie Ming Lee "Software package for off-axis digital holographic microscopy imaging processing", Proc. SPIE 11202, Biophotonics Australasia 2019, 112021C (30 December 2019); https://doi.org/10.1117/12.2539541 
