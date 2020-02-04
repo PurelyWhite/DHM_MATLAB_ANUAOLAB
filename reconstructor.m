@@ -150,7 +150,7 @@ classdef reconstructor < handle
             reconstructed = ifft2(ifftshift(center_fft));
             intensity = reconstructed.*conj(reconstructed); % intensity
             phase = angle(reconstructed); % phase
-            image(phase);
+            % image(phase);
             % unwrap
             if gpuDeviceCount > 0
                 phase_unwrap = double(LeastSquares_Unwrapper(single(phase)));
