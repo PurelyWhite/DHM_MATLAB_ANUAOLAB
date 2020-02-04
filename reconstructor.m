@@ -150,7 +150,7 @@ classdef reconstructor < handle
             reconstructed = ifft2(ifftshift(center_fft));
             intensity = reconstructed.*conj(reconstructed); % intensity
             phase = angle(reconstructed); % phase
-            % image(phase);
+            image(phase);
             % unwrap
             if gpuDeviceCount > 0
                 phase_unwrap = double(LeastSquares_Unwrapper(single(phase)));
@@ -194,7 +194,7 @@ classdef reconstructor < handle
             end
             
             % apply median filter for 5 neighbouring pixels
-            % thickness = medfilt2(thickness, [5, 5]);
+            thickness = medfilt2(thickness, [5, 5]);
             
             % apply weighted moving average filter for 5 neighbouring
             % pixels using conv2
@@ -202,16 +202,16 @@ classdef reconstructor < handle
             thickness = conv2(thickness, conv_mask, 'same');
             
             % resize thickness based on pixel size
-            thickness = imresize(thickness, pixel_size);
+            % thickness = imresize(thickness, pixel_size);
             
-            if batch_process == 1
+%             if batch_process == 1
                 d_xy = pixel_size;
                 frame_peak_height = max(thickness, [], 'all');
                 frame_volume = sum(thickness * d_xy * d_xy, 'all');
-            else
-                frame_peak_height = [];
-                frame_volume = [];
-            end
+%             else
+%                 frame_peak_height = [];
+%                 frame_volume = [];
+%             end
             
             % Upper/lower colorbar limit
             if uplimit == 0
@@ -245,7 +245,7 @@ classdef reconstructor < handle
             end
         end
         
-        function [video, start_frame, total_frames, save_folder, peak_height, volume, dim] = video_direct_batch_processing(~, desktop_path, save_folder_name, video_path, start, ending, skip)
+        function [video, start_frame, total_frames, save_folder, peak_height, volume, dim] = video_direct_batch_processing(~, desktop_path, save_folder_name, video_path, start, ending, skip, app_dim)
             save_folder = strcat(desktop_path, save_folder_name);
             mkdir(save_folder);
             mkdir([save_folder '\Hologram']);
@@ -262,13 +262,13 @@ classdef reconstructor < handle
             
             peak_height = zeros(ceil(total_frames/skip), 2);
             volume = zeros(ceil(total_frames/skip), 2);
-            dim = [.2 .5 .3 .3];
+            dim = app_dim;
         end
         
-        function [peak_height, volume, dim] = height_volume_data(~, up)
+        function [peak_height, volume, dim] = height_volume_data(~, up, app_dim)
             peak_height = zeros(length(up), 2);
             volume = zeros(length(up), 2);
-            dim = [.2 .5 .3 .3];
+            dim = app_dim;
         end
         
         function [height_array, volume_array] = single_frame_data(~, file, save_height, save_volume, save_folder, count, height, height_array, volume, volume_array, thickness)
