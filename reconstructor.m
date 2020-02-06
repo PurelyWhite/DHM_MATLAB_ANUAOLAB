@@ -1,6 +1,10 @@
 classdef reconstructor < handle
+    properties
+        curve
+    end
     methods
         function obj = reconstructor()
+            obj.curve = [];
         end
         
         function [imgo, logimgmaxmin, fftimg] = load_img(~,path,open,roi)
@@ -144,15 +148,19 @@ classdef reconstructor < handle
                 region_box_dummy(1) : (region_box_dummy(1) + region_box_dummy(3))) = window;
         end
         
-        function [intensity_no_curve, phase_unwrap_no_curve, thickness, lower_limit, upper_limit, frame_peak_height, frame_volume] = process(~, batch_process, center_fft, uplimit, lowlimit, invert, wavelength, ri, pixel_size)
+        function [intensity_no_curve, phase_unwrap_no_curve, thickness, lower_limit, upper_limit, frame_peak_height, frame_volume] = process(this, batch_process, center_fft, uplimit, lowlimit, invert, wavelength, ri, pixel_size)
             
             % reconstruct = ifft2(fftshift(centreimg)); % inverse fourier transform
             reconstructed = ifft2(ifftshift(center_fft));
             intensity = reconstructed.*conj(reconstructed); % intensity
             phase = angle(reconstructed); % phase
+            
+            % image(phase);
+            
             % unwrap
             if gpuDeviceCount > 0
-                phase_unwrap = double(LeastSquares_Unwrapper(single(phase)));
+                p = gpuArray(phase);
+                phase_unwrap = gather(LeastSquares_Unwrapper(p));
             else
                 phase_unwrap = double(Miguel_2D_unwrapper(single(phase)));
             end
@@ -172,8 +180,14 @@ classdef reconstructor < handle
             intensity = intensity(resize:(imgsize(1)-resize), resize:(imgsize(2)-resize));
             phase_unwrap = phase_unwrap(resize:(imgsize(1)-resize), resize:(imgsize(2)-resize));
             
+            if sum(size(this.curve)) == 0
+                curve_phase = downsampled_curve(phase_unwrap);
+                this.curve = curve_phase;
+            else
+                curve_phase = this.curve;
+            end
             % curve removal
-            curve_phase = downsampled_curve(phase_unwrap);
+            
             % curve_intensity = curve(intensity);
             phase_unwrap_no_curve = (phase_unwrap - curve_phase);
             intensity_no_curve = intensity; % - curve_intensity;
