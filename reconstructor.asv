@@ -340,7 +340,7 @@ classdef reconstructor
             end
         end
         
-        function [obj, phase_unwrapped] = preview(obj, hologram, first_order)
+        function [phase_unwrapped] = preview(obj, hologram, first_order)
             if obj.use_gpu()
                 hologram = gpuArray(hologram);
             end
@@ -367,7 +367,7 @@ classdef reconstructor
             phase_unwrap = -phase_unwrap;
             % curve removal
             if sum(size(obj.curve)) == 0
-                if obj.use_gpu()
+                if obj.use_gpu
                     curve_phase = gpuArray(downsampled_curve(gather(phase_unwrap)));
                 else
                     curve_phase = downsampled_curve(phase_unwrap);

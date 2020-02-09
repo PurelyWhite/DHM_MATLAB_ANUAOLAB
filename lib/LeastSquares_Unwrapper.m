@@ -7,95 +7,55 @@
 % Output:
 %   * phi: unwrapped phase from the weighted (or unweighted) least-square phase unwrapping
 % Author: Muhammad F. Kasim (University of Oxford, 2016)
-% Download Sourcee: https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/60345/versions/1/previews/phase_unwrap.m/index.html
+% Download Source: https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/60345/versions/1/previews/phase_unwrap.m/index.html
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function phi = LeastSquares_Unwrapper(psi, weight)
-    if (nargin < 2) % unweighted phase unwrap
-        % get the wrapped differences of the wrapped values
-        dx = [zeros([size(psi,1),1]), wrapToPi(diff(psi, 1, 2)), zeros([size(psi,1),1])];
-        dy = [zeros([1,size(psi,2)]); wrapToPi(diff(psi, 1, 1)); zeros([1,size(psi,2)])];
-        rho = diff(dx, 1, 2) + diff(dy, 1, 1);
-        
-        % get the result by solving the poisson equation
-        phi = solvePoisson(rho);
-        
-    else % weighted phase unwrap
-        % check if the weight has the same size as psi
-        if (~all(size(weight) == size(psi)))
-            error('Argument error: Size of the weight must be the same as size of the wrapped phase');
-        end
-        
-        % vector b in the paper (eq 15) is dx and dy
-        dx = [wrapToPi(diff(psi, 1, 2)), zeros([size(psi,1),1])];
-        dy = [wrapToPi(diff(psi, 1, 1)); zeros([1,size(psi,2)])];
-        
-        % multiply the vector b by weight square (W^T * W)
-        WW = weight .* weight;
-        WWdx = WW .* dx;
-        WWdy = WW .* dy;
-        
-        % applying A^T to WWdx and WWdy is like obtaining rho in the unweighted case
-        WWdx2 = [zeros([size(psi,1),1]), WWdx];
-        WWdy2 = [zeros([1,size(psi,2)]); WWdy];
-        rk = diff(WWdx2, 1, 2) + diff(WWdy2, 1, 1);
-        normR0 = norm(rk(:));
-        
-        % start the iteration
-        eps = 1e-8;
-        k = 0;
-        phi = zeros(size(psi));
-        while (~all(rk == 0))
-            zk = solvePoisson(rk);
-            k = k + 1;
-            
-            if (k == 1) pk = zk;
-            else 
-                betak = sum(sum(rk .* zk)) / sum(sum(rkprev .* zkprev));
-                pk = zk + betak * pk;
-            end
-            
-            % save the current value as the previous values
-            rkprev = rk;
-            zkprev = zk;
-            
-            % perform one scalar and two vectors update
-            Qpk = applyQ(pk, WW);
-            alphak = sum(sum(rk .* zk)) / sum(sum(pk .* Qpk));
-            phi = phi + alphak * pk;
-            rk = rk - alphak * Qpk;
-            
-            % check the stopping conditions
-            if ((k >= numel(psi)) || (norm(rk(:)) < eps * normR0)) break; end;
-        end
+classdef LeastSquares_Unwrapper
+    properties
+        mult
     end
-end
+    methods
+        function obj = LeastSquares_Unwrapper(N,M)
+            [I, J] = meshgrid([0:M-1], [0:N-1]);
+            arr = 2 .* (cos(pi*I/M) + cos(pi*J/N) - 2);
+            obj.mult = gpuArray(arr);
+        end
+        
+        function phi = unwrap(obj, psi)
+            % get the wrapped differences of the wrapped values
+            dx = [zeros([size(psi,1),1]), wrapToPi(diff(psi, 1, 2)), zeros([size(psi,1),1])];
+            dy = [zeros([1,size(psi,2)]); wrapToPi(diff(psi, 1, 1)); zeros([1,size(psi,2)])];
+            rho = diff(dx, 1, 2) + diff(dy, 1, 1);
 
-function phi = solvePoisson(rho)
-    % solve the poisson equation using dct
-    gpuRho = gpuArray(rho);
-    dctRho = transpose(dct(transpose(dct(gpuRho))));
-    [N, M] = size(gpuRho);
-    [I, J] = meshgrid([0:M-1], [0:N-1]);
-    dctPhi = dctRho ./ 2 ./ (cos(pi*I/M) + cos(pi*J/N) - 2);
-    dctPhi(1,1) = 0; % handling the inf/nan value
-    
-    % now invert to get the result
-    phi = gather(transpose(idct(transpose(idct(dctPhi)))));
-end
+            % get the result by solving the poisson equation
+            phi = obj.solvePoisson(rho);
+        end
 
-% apply the transformation (A^T)(W^T)(W)(A) to 2D matrix
-function Qp = applyQ(p, WW)
-    % apply (A)
-    dx = [diff(p, 1, 2), zeros([size(p,1),1])];
-    dy = [diff(p, 1, 1); zeros([1,size(p,2)])];
-    
-    % apply (W^T)(W)
-    WWdx = WW .* dx;
-    WWdy = WW .* dy;
-    
-    % apply (A^T)
-    WWdx2 = [zeros([size(p,1),1]), WWdx];
-    WWdy2 = [zeros([1,size(p,2)]); WWdy];
-    Qp = diff(WWdx2,1,2) + diff(WWdy2,1,1);
+        function phi = solvePoisson(obj, rho)
+            % solve the poisson equation using dct  
+            dctRho = transpose(dct(transpose(dct(rho))));
+            
+            dctPhi = dctRho ./ obj.mult;
+            
+            dctPhi(1,1) = 0; % handling the inf/nan value
+
+            % now invert to get the result
+            phi = transpose(idct(transpose(idct(dctPhi))));
+        end
+
+        % apply the transformation (A^T)(W^T)(W)(A) to 2D matrix
+        function Qp = applyQ(~, p, WW)
+            % apply (A)
+            dx = [diff(p, 1, 2), zeros([size(p,1),1])];
+            dy = [diff(p, 1, 1); zeros([1,size(p,2)])];
+
+            % apply (W^T)(W)
+            WWdx = WW .* dx;
+            WWdy = WW .* dy;
+
+            % apply (A^T)
+            WWdx2 = [zeros([size(p,1),1]), WWdx];
+            WWdy2 = [zeros([1,size(p,2)]); WWdy];
+            Qp = diff(WWdx2,1,2) + diff(WWdy2,1,1);
+        end
+    end 
 end

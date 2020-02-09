@@ -14,11 +14,14 @@
 #include <cuda.h>
 #include <curand_kernel.h>
 #include <curand.h>
+#include <thrust/sort.h>
+#include <thrust/device_ptr.h>
+//#include <stl.h>
 
 __device__ static float PI = 3.141592654;
 __device__ static float TWOPI = 6.283185307;
 
-bool DEBUG = false;
+bool DEBUG = true;
 
 //pixel information
 struct PIXEL
@@ -45,133 +48,12 @@ struct EDGE
     PIXEL *pointer_1;		//pointer to the first pixel
     PIXEL *pointer_2;		//pointer to the second pixel
     int increment;			//No. of 2*pi to add to one of the pixels to unwrap it with respect to the second
+
+    bool operator < (const EDGE& edge) const
+    {
+        return (reliab < edge.reliab);
+    }
 };
-
-
-//another version of Mixtogether but this function should only be use with the sort program
-void  Mix(EDGE *Pointer1, int *index1, int *index2, int size)
-{
-    int counter1 = 0;
-    int counter2 = 0;
-    int *TemporalPointer = index1;
-
-    int *Result = (int *) calloc(size * 2, sizeof(int));
-    int *Follower = Result;
-
-    while ((counter1 < size) && (counter2 < size))
-    {
-        if ((Pointer1[*(index1 + counter1)].reliab <= Pointer1[*(index2 + counter2)].reliab))
-        {
-            *Follower = *(index1 + counter1);
-            Follower++;
-            counter1++;
-        }
-        else
-        {
-            *Follower = *(index2 + counter2);
-            Follower++;
-            counter2++;
-        }
-    }//while
-
-    if (counter1 == size)
-    {
-        memcpy(Follower, (index2 + counter2), sizeof(int)*(size-counter2));
-    }
-    else
-    {
-        memcpy(Follower, (index1 + counter1), sizeof(int)*(size-counter1));
-    }
-
-    Follower = Result;
-    index1 = TemporalPointer;
-
-    int i;
-    for (i=0; i < 2 * size; i++)
-    {
-        *index1 = *Follower;
-        index1++;
-        Follower++;
-    }
-
-    free(Result);
-}
-
-//this is may be the fastest sort program;
-//see the explination in quickSort function below
-void  sort(EDGE *Pointer, int *index, int size)
-{
-    if (size == 2)
-    {
-        if ((Pointer[*index].reliab) > (Pointer[*(index+1)].reliab))
-        {
-            int Temp;
-            Temp = *index;
-            *index = *(index+1);
-            *(index+1) = Temp;
-        }
-    }
-    else if (size > 2)
-    {
-        sort(Pointer, index, size/2);
-        sort(Pointer, (index + (size/2)), size/2);
-        Mix(Pointer, index, (index + (size/2)), size/2);
-    }
-}
-
-//this function tries to implement a nice idea explained below
-//we need to sort edge array. Each edge element conisists of 16 bytes.
-//In normal sort program we compare two elements in the array and exchange
-//their place under some conditions to do the sorting. It is very probable
-// that an edge element may change its place hundred of times which makes
-//the sorting a very time consuming operation. The idea in this function
-//is to give each edge element an index and move the index not the edge
-//element. The edge need 4 bytes which makes the sorting operation faster.
-// After finishingthe sorting of the indexes, we know the position of each index.
-//So we know how to sort edges
-void  quick_sort(EDGE *Pointer, int size)
-{
-    int *index = (int *) calloc(size, sizeof(int));
-    int i;
-
-    for (i=0; i<size; ++i)
-        index[i] = i;
-
-    sort(Pointer, index, size);
-
-    EDGE * a = (EDGE *) calloc(size, sizeof(EDGE));
-    for (i=0; i<size; ++i)
-        a[i] = Pointer[*(index + i)];
-
-    memcpy(Pointer, a, size*sizeof(EDGE));
-
-    free(index);
-    free(a);
-}
-
-
-
-void read_data(char *inputfile,float *Data, int length)
-{
-    printf("Reading the Wrapped Values form Binary File.............>");
-    FILE *ifptr;
-    ifptr = fopen(inputfile,"rb");
-    if(ifptr == NULL) printf("Error opening the file\n");
-    fread(Data,sizeof(float),length,ifptr);
-    fclose(ifptr);
-    printf(" Done.\n");
-}
-
-void write_data(char *outputfile,float *Data,int length)
-{
-    printf("Writing the Unwrapped Values to Binary File.............>");
-    FILE *ifptr;
-    ifptr = fopen(outputfile,"wb");
-    if(ifptr == NULL) printf("Error opening the file\n");
-    fwrite(Data,sizeof(float),length,ifptr);
-    fclose(ifptr);
-    printf(" Done.\n");
-}
 
 //---------------start quicker_sort algorithm --------------------------------
 #define swap(x,y) {EDGE t; t=x; x=y; y=t;}
@@ -265,34 +147,25 @@ __global__ void quicker_sort(EDGE *left, EDGE *right)
 __global__
 void  initialisePIXELs(float *WrappedImage, PIXEL *pixel, int image_width, int image_height, curandState *d_rand_state)
 {
-    int i, j;
-
     int index = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = blockDim.x * gridDim.x;
 
-    PIXEL *pixel_pointer = pixel + index;
-    float *wrapped_image_pointer = WrappedImage + index;
+    PIXEL *pixel_pointer;
+    float *wrapped_image_pointer;
 
     for(int i = index; i < image_width*image_height; i += stride) {
-        //pixel_pointer->x = j;
-        //pixel_pointer->y = i;
-        //mexPrintf("Setting increment\n");
+        pixel_pointer = pixel + i;
+        wrapped_image_pointer = WrappedImage + i;
         pixel_pointer->increment = 0;
         pixel_pointer->number_of_pixels_in_group = 1;
-        //mexPrintf("Initialising wrapped_image_pointer\n");
         pixel_pointer->value = *wrapped_image_pointer;
-        //mexPrintf("Initialising reliablility\n");
-        pixel_pointer->reliability = 9999999 + curand_uniform(&d_rand_state[index]);
-        //mexPrintf("Initialising Head/Last\n");
+        pixel_pointer->reliability = 9999999.0 + curand_uniform(&d_rand_state[index]);
         pixel_pointer->head = pixel_pointer;
         pixel_pointer->last = pixel_pointer;
         pixel_pointer->next = NULL;
         pixel_pointer->new_group = 0;
         pixel_pointer->group = -1;
-        pixel_pointer = pixel_pointer + stride;
-        wrapped_image_pointer = wrapped_image_pointer + stride;
     }
-
 }
 //-------------------end initialise pixels -----------
 
@@ -303,7 +176,8 @@ __device__ float wrap(float pixel_value)
     if (pixel_value > PI)	wrapped_pixel_value = pixel_value - TWOPI;
     else if (pixel_value < -PI)	wrapped_pixel_value = pixel_value + TWOPI;
     else wrapped_pixel_value = pixel_value;
-    //return wrapped_pixel_value;
+
+    return wrapped_pixel_value;
 }
 
 // pixelL_value is the left pixel,	pixelR_value is the right pixel
@@ -314,18 +188,16 @@ __device__ int find_wrap(float pixelL_value, float pixelR_value)
     difference = pixelL_value - pixelR_value;
 
     if (difference > PI){
-        //mexPrintf("Wrapping\n");
         wrap_value = -1;
     }
     else if (difference < -PI){
-        //mexPrintf("Wrapping\n");
         wrap_value = 1;
     }
     else {
         wrap_value = 0;
     }
 
-    //return wrap_value;
+    return wrap_value;
 }
 
 __global__ void calculate_reliability(float *wrappedImage, PIXEL *pixel, int image_width, int image_height)
@@ -335,11 +207,31 @@ __global__ void calculate_reliability(float *wrappedImage, PIXEL *pixel, int ima
     PIXEL *pixel_pointer = pixel + image_width_plus_one;
     float *WIP = wrappedImage + image_width_plus_one; //WIP is the wrapped image pointer
     float H, V, D1, D2;
-    int i, j;
 
-    for (i = 1; i < image_height -1; ++i)
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+
+
+    for(int i = index; i < (image_height-1)*(image_width); i += stride){
+        // Ignore the first or last pixel in each row
+        if(index % image_width == 0 || index % image_width == image_width - 1){
+            continue;
+        }
+
+        pixel_pointer = pixel + image_width_plus_one + index;
+        WIP = wrappedImage + image_width_plus_one + index;
+
+        H = wrap(*(WIP - 1) - *WIP) - wrap(*WIP - *(WIP + 1));
+        V = wrap(*(WIP - image_width) - *WIP) - wrap(*WIP - *(WIP + image_width));
+        D1 = wrap(*(WIP - image_width_plus_one) - *WIP) - wrap(*WIP - *(WIP + image_width_plus_one));
+        D2 = wrap(*(WIP - image_width_minus_one) - *WIP) - wrap(*WIP - *(WIP + image_width_minus_one));
+        pixel_pointer->reliability = H*H + V*V + D1*D1 + D2*D2;
+    }
+
+    /*
+    for (int i = 1; i < image_height -1; ++i)
     {
-        for (j = 1; j < image_width - 1; ++j)
+        for (int j = 1; j < image_width - 1; ++j)
         {
             H = wrap(*(WIP - 1) - *WIP) - wrap(*WIP - *(WIP + 1));
             V = wrap(*(WIP - image_width) - *WIP) - wrap(*WIP - *(WIP + image_width));
@@ -351,23 +243,41 @@ __global__ void calculate_reliability(float *wrappedImage, PIXEL *pixel, int ima
         }
         pixel_pointer += 2;
         WIP += 2;
-    }
+    }*/
 }
 
 //calculate the reliability of the horizental edges of the image
 //it is calculated by adding the reliability of pixel and the relibility of
 //its right neighbour
 //edge is calculated between a pixel and its next neighbour
-__global__ void horizentalEDGEs(PIXEL *pixel, EDGE *edge, int image_width, int image_height)
+__global__ void horizontalEDGEs(PIXEL *pixel, EDGE *edge, int image_width, int image_height)
 {
-    int i, j;
     EDGE *edge_pointer = edge;
     PIXEL *pixel_pointer = pixel;
     char mybuff1[50];
 
-    for (i = 0; i < image_height; i++)
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+
+
+    for(int i = index; i < image_height*image_width; i += stride){
+        if(i % image_width == image_width - 1){
+            continue;
+        }
+        pixel_pointer = pixel + i;
+        int edge_pos = (i % (image_width)) + ((i/(image_width))*(image_width-1));
+        edge_pointer = edge + edge_pos;
+
+        edge_pointer->pointer_1 = pixel_pointer;
+        edge_pointer->pointer_2 = (pixel_pointer+1);
+        edge_pointer->reliab = pixel_pointer->reliability + (pixel_pointer + 1)->reliability;
+        edge_pointer->increment = find_wrap(pixel_pointer->value, (pixel_pointer + 1)->value);
+    }
+
+    /*
+    for (int i = 0; i < image_height; i++)
     {
-        for (j = 0; j < image_width - 1; j++)
+        for (int j = 0; j < image_width - 1; j++)
         {
             edge_pointer->pointer_1 = pixel_pointer;
             edge_pointer->pointer_2 = (pixel_pointer+1);
@@ -383,7 +293,7 @@ __global__ void horizentalEDGEs(PIXEL *pixel, EDGE *edge, int image_width, int i
             edge_pointer++;
         }
         pixel_pointer++;
-    }
+    }*/
 }
 
 //calculate the reliability of the vertical EDGEs of the image
@@ -391,15 +301,27 @@ __global__ void horizentalEDGEs(PIXEL *pixel, EDGE *edge, int image_width, int i
 //its lower neighbour in the image.
 __global__ void  verticalEDGEs(PIXEL *pixel, EDGE *edge, int image_width, int image_height)
 {
-    int i, j;
-
     PIXEL *pixel_pointer = pixel;
     EDGE *edge_pointer = edge + (image_height) * (image_width - 1);
     char mybuff1[50];
 
-    for (i=0; i<image_height - 1; i++)
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+
+    for(int i = index; i < (image_height-1)*(image_width); i += stride) {
+        pixel_pointer = pixel + i;
+        edge_pointer = edge + i + ((image_height) * (image_width - 1));
+
+        edge_pointer->pointer_1 = pixel_pointer;
+        edge_pointer->pointer_2 = (pixel_pointer + image_width);
+        edge_pointer->reliab = pixel_pointer->reliability + (pixel_pointer + image_width)->reliability;
+        edge_pointer->increment = find_wrap(pixel_pointer->value, (pixel_pointer + image_width)->value);
+    }
+
+    /*
+    for (int i=0; i<image_height - 1; i++)
     {
-        for (j=0; j < image_width; j++)
+        for (int j=0; j < image_width; j++)
         {
             edge_pointer->pointer_1 = pixel_pointer;
             edge_pointer->pointer_2 = (pixel_pointer + image_width);
@@ -415,6 +337,7 @@ __global__ void  verticalEDGEs(PIXEL *pixel, EDGE *edge, int image_width, int im
             edge_pointer++;
         } //j loop
     } // i loop
+    */
 }
 
 //gather the pixels of the image into groups
@@ -540,14 +463,15 @@ __global__ void  gatherPIXELs(EDGE *edge, int image_width, int image_height)
 //unwrap the image
 __global__ void unwrapImage(PIXEL *pixel, int image_width, int image_height)
 {
-    int i;
     int image_size = image_width * image_height;
-    PIXEL *pixel_pointer=pixel;
+    PIXEL *pixel_pointer;
 
-    for (i = 0; i < image_size; i++)
-    {
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+
+    for(int i = index; i < image_size; i += stride) {
+        pixel_pointer = pixel + i;
         pixel_pointer->value += TWOPI * (float)(pixel_pointer->increment);
-        pixel_pointer++;
     }
 }
 
@@ -556,22 +480,41 @@ __global__ void unwrapImage(PIXEL *pixel, int image_width, int image_height)
 //phase map on the buffer of the wrapped phase map.
 __global__ void  returnImage(PIXEL *pixel, float *unwrappedImage, int image_width, int image_height)
 {
-    int i;
     int image_size = image_width * image_height;
-    float *unwrappedImage_pointer = unwrappedImage;
-    PIXEL *pixel_pointer = pixel;
+    float *unwrappedImage_pointer;
+    PIXEL *pixel_pointer;
 
-    for (i=0; i < image_size; i++)
-    {
-        *unwrappedImage_pointer = pixel_pointer->value;
-        pixel_pointer++;
-        unwrappedImage_pointer++;
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    int stride = blockDim.x * gridDim.x;
+
+    for(int i = index; i < image_size; i += stride) {
+        pixel_pointer = pixel + i;
+        unwrappedImage_pointer = unwrappedImage + i;
+        *unwrappedImage_pointer = pixel_pointer->value;  //(float) pixel_pointer->reliability;
     }
 }
 
 __global__ void init_rand(curandState *state){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     curand_init(1337, idx,0, state);
+}
+
+__global__ void gpuUnwrap(float* WrappedImage, float* UnwrappedImage, int image_width, int image_height, curandState *state){
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    curand_init(1337, index,0, state);
+}
+
+__global__ void init_test_edges(int No_of_Edges, EDGE *test_edges){
+    EDGE *test_e;
+    for(int i=0; i<No_of_Edges; i++){
+        test_e = test_edges + i;
+
+        //if(DEBUG){
+        //    mexPrintf("Running test: initialising random value %2d\n", i);
+        //}
+
+        test_e->reliab = 0; //rand();
+    }
 }
 
 //the main function of the unwrapper
@@ -594,29 +537,32 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     int No_of_Edges = (image_width)*(image_height-1) + (image_width-1)*(image_height);
 
-    int blockSize = 1; //1024;
-    int numBlocks = 1; //(image_size + blockSize - 1) / blockSize;
+    int blockSize = 256; //1024;
+    int numBlocks = 32; //(image_size + blockSize - 1) / blockSize;
 
     PIXEL *pixel;
     EDGE *edge;
+
+    if(DEBUG){
+        mexPrintf("WrappedImage %2.2f\n", *WrappedImage);
+    }
 
     cudaMallocManaged(&pixel,image_size* sizeof(PIXEL));
     cudaMallocManaged(&edge,No_of_Edges* sizeof(EDGE));
 
     float* gpuWrappedImage;
 
-    cudaMalloc(&gpuWrappedImage,image_size* sizeof(float*));
-    cudaMemcpy(gpuWrappedImage, WrappedImage, image_size*sizeof(float*), cudaMemcpyHostToDevice);
+    cudaMallocManaged(&gpuWrappedImage,image_size* sizeof(float));
+    cudaMemcpy(gpuWrappedImage, WrappedImage, image_size*sizeof(float), cudaMemcpyHostToDevice);
 
     //initialise the pixels
     if(DEBUG){
         mexPrintf("Initialising pixels\n");
-        mexPrintf("WrappedImage %30.25f\n", WrappedImage);
     }
 
     //mexPrintf("Initialising Random Number")
     curandState *d_rand_state;
-    cudaMalloc(&d_rand_state,blockSize*numBlocks);
+    cudaMallocManaged(&d_rand_state,blockSize*numBlocks);
 
     init_rand<<<numBlocks,blockSize>>>(d_rand_state);
     initialisePIXELs<<<numBlocks,blockSize>>>(gpuWrappedImage, pixel, image_width, image_height, d_rand_state);
@@ -634,65 +580,107 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         mexPrintf("Calculating reliabililty\n");
     }
 
-
     calculate_reliability<<<numBlocks,blockSize>>>(gpuWrappedImage, pixel, image_width, image_height); //
 
-    PIXEL *pixel_pointer = pixel;
-    char mybuff1[50],mybuff2[50],mybuff3[50],mybuff4[50];
+    //PIXEL *pixel_pointer = pixel;
+    //char mybuff1[50],mybuff2[50],mybuff3[50],mybuff4[50];
 
     if(DEBUG){
         mexPrintf("Gathering edges\n");
     }
 
-    horizentalEDGEs<<<numBlocks,blockSize>>>(pixel, edge, image_width, image_height);
+    horizontalEDGEs<<<numBlocks,numBlocks>>>(pixel, edge, image_width, image_height);
     verticalEDGEs<<<numBlocks,blockSize>>>(pixel, edge, image_width, image_height);
 
     if(DEBUG){
         mexPrintf("Sorting edges\n");
     }
 
-    //sort the EDGEs depending on their reiability. The PIXELs with higher relibility (small value) first
+    //sort the EDGEs depending on their reliability. The PIXELs with higher reliability (small value) first
     //if your code stuck because of the quicker_sort() function, then use the quick_sort() function
     //run only one of the two functions (quick_sort() or quicker_sort() )
     //quick_sort(edge, No_of_Edges);
     quicker_sort<<<1,1>>>(edge, edge + No_of_Edges - 1);
 
-    EDGE *edge_pointer = edge;
-    PIXEL *PIXEL1;
-    PIXEL *PIXEL2;
-    double diff;
+    if(DEBUG){
+        mexPrintf("Running test\n");
+    }
 
-    int a;
+    const int N = 6;
+    int A[N] = {1, 4, 2, 8, 5, 7};
+
+    EDGE *test_edges;
+    cudaMallocManaged(&test_edges,No_of_Edges* sizeof(EDGE));
+
+    thrust::device_ptr<EDGE> device_test_edges(test_edges);
+
+    if(DEBUG){
+        mexPrintf("Running test: initialising random values\n");
+    }
+
+    init_test_edges<<<1,1>>>(No_of_Edges, test_edges);
+
+    if(DEBUG){
+        mexPrintf("Running test sort\n");
+    }
+
+    //cudaDeviceSynchronize();
+    //thrust::stable_sort(device_test_edges, device_test_edges + No_of_Edges - 1, thrust::less<EDGE>());
+
+    //thrust::stable_sort(edge,edge+No_of_Edges-1,thrust::less<EDGE>());
+
+    //EDGE *edge_pointer = edge;
+    //PIXEL *PIXEL1;
+    //PIXEL *PIXEL2;
+    //double diff;
+
+    //int a;
 
     if(DEBUG){
         mexPrintf("Gathering the pixels...\n");
     }
 
-
     //gather PIXELs into groups
-    gatherPIXELs<<<numBlocks,blockSize>>>(edge, image_width, image_height);
+    gatherPIXELs<<<1,1>>>(edge, image_width, image_height);
 
-    pixel_pointer = pixel;
+    if(DEBUG){
+        mexPrintf("Unwrapping Image...\n");
+    }
 
     //unwrap the whole image
     unwrapImage<<<numBlocks,blockSize>>>(pixel, image_width, image_height);
 
-    float* gpuUpwrappedImage;
-    cudaMallocManaged(&gpuUpwrappedImage, image_size * sizeof(float));
+    if(DEBUG){
+        mexPrintf("Returning Image...\n");
+    }
+
+    float* gpuUnwrappedImage;
+    cudaMallocManaged(&gpuUnwrappedImage, image_size * sizeof(float));
 
     //copy the image from PIXEL structure to the wrapped phase array passed to this function
-    returnImage<<<numBlocks,blockSize>>>(pixel, gpuUpwrappedImage, image_width, image_height);
-    cudaMemcpy(UnwrappedImage, gpuUpwrappedImage, image_size * sizeof(float), cudaMemcpyDeviceToHost);
-    //mexPrintf("Unwrapp Image%30.25f\n", UnwrappedImage);
+    returnImage<<<numBlocks,blockSize>>>(pixel, gpuUnwrappedImage, image_width, image_height);
+
+    if(DEBUG){
+        mexPrintf("Copying unwrapped image...\n");
+    }
+    cudaMemcpy(UnwrappedImage, gpuUnwrappedImage, image_size * sizeof(float), cudaMemcpyDeviceToHost);
+
+    if(DEBUG){
+        //mexPrintf("Unwrapped Image %2.2f\n", pixel->value);
+        //mexPrintf("Unwrapped Image %2.2f\n", *gpuUnwrappedImage);
+    }
+
     cudaDeviceSynchronize();
 
     cudaFree(edge);
     cudaFree(pixel);
     cudaFree(gpuWrappedImage);
+    cudaFree(gpuUnwrappedImage);
+    cudaFree(d_rand_state);
+
     if(DEBUG){
         mexPrintf("Phase successfully retrieved...\n");
     }
-
 
     return;
 }

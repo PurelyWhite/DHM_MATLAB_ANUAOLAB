@@ -14,5 +14,12 @@ classdef recorder < handle
         function stop(~, camera)
             stop(camera.vid);
         end
+        function [frame] = snap(~, camera)
+            frame = getsnapshot(camera.vid);
+        end
+        
+        function preview(obj, camera, videoplayer)
+            
+        end
     end
 end

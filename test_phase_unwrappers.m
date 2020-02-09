@@ -20,6 +20,7 @@ disp('Predef DCT Unwrapper');
 tic
 [N,M] = size(phase);
 unwrapper = LeastSquares_Unwrapper(N,M);
+p = gpuArray(phase);
 matlab_leastSquares_nonWeighted_unwrapped = gather(unwrapper.unwrap(p));
 toc
 
