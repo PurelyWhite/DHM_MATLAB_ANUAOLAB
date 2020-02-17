@@ -340,6 +340,17 @@ classdef reconstructor
             end
         end
         
+        function [show_crop_region] = show_fft_crop(obj, fftlogimg, roi, uiaxes)
+            show_crop_region = fftlogimg;
+            show_crop_region(roi(2):roi(2) + roi(4), roi(1):roi(1) + roi(3)) = ...
+                show_crop_region(roi(2):roi(2) + roi(4), roi(1):roi(1) + roi(3)) + 0.2;
+            if obj.use_gpu()
+                show_crop_region = gather(show_crop_region);
+            end
+            imshow(show_crop_region, 'parent', uiaxes);
+            
+        end
+        
         function [obj, phase_unwrapped] = preview(obj, hologram, first_order)
             if obj.use_gpu()
                 hologram = gpuArray(hologram);
