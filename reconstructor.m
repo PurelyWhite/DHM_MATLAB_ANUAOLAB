@@ -351,7 +351,7 @@ classdef reconstructor
             
         end
         
-        function [obj, phase_unwrapped] = preview(obj, hologram, first_order)
+        function [obj, phase_unwrapped] = preview(obj, hologram, first_order, frame_count)
             if obj.use_gpu()
                 hologram = gpuArray(hologram);
             end
@@ -375,9 +375,10 @@ classdef reconstructor
             imgsize = size(centreimg);
             resize = 10;
             phase_unwrap = phase_unwrap(resize:(imgsize(1)-resize), resize:(imgsize(2)-resize));
-            phase_unwrap = -phase_unwrap;
+            %phase_unwrap = -phase_unwrap;
+            
             % curve removal
-            if sum(size(obj.curve)) == 0
+            if sum(size(obj.curve)) == 0 || mod(frame_count,10) == 0
                 if obj.use_gpu()
                     curve_phase = gpuArray(downsampled_curve(gather(phase_unwrap)));
                 else
@@ -391,7 +392,23 @@ classdef reconstructor
             
             % curve_intensity = curve(intensity);
             phase_unwrapped = (phase_unwrap - curve_phase);
+            
+            % apply median filter for 5 neighbouring pixels
+            phase_unwrapped   = medfilt2(phase_unwrapped , [5, 5]);
+            
+            % apply weighted moving average filter for 5 neighbouring
+            % pixels using conv2
+            conv_mask = ones(5, 5) / 5^2;
+            phase_unwrapped = conv2(phase_unwrapped  , conv_mask, 'same');
+            phase_unwrapped(phase_unwrapped < 0) = 0;
             phase_unwrapped = mat2gray(phase_unwrapped);
+            
+            % Convert to color
+            C = hsv(256);
+            L = size(C,1);
+            
+            Gs = round(interp1(linspace(min(phase_unwrapped(:)),max(phase_unwrapped(:)),L),1:L,phase_unwrapped));
+            phase_unwrapped = reshape(C(Gs,:),[size(Gs) 3]);
             
             if obj.use_gpu()
                 phase_unwrapped = gather(phase_unwrapped);
