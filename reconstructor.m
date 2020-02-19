@@ -33,7 +33,9 @@ classdef reconstructor
             if sum(size(obj.img_size)) == 0
                 obj.img_size = size(img);
                 [N,M] = size(img);
-                obj.unwrapper = LeastSquares_Unwrapper(N,M);
+                if obj.use_gpu()
+                    obj.unwrapper = LeastSquares_Unwrapper(N,M);
+                end
             end
             
             fftimg = fftshift(fft2(img)); % 2d fourier transform and translate to centre
@@ -41,7 +43,7 @@ classdef reconstructor
             logimgmaxmin = (logimg - min(min(logimg)))/(max(max(logimg))-min(min(logimg))); % normalise
         end
         
-        function [centreimg,first_order] = manual_crop(~, batch_process, preview, fftimg, first_order)
+        function [centreimg,first_order] = manual_crop(obj, batch_process, preview, fftimg, first_order)
             if batch_process <= 1
                 figure('name', 'Manual FFT Cropping');
                 imagesc(preview);
@@ -51,7 +53,11 @@ classdef reconstructor
             end
             imgsize = size(fftimg); %determine image size
             fftimgcrop = fftimg(first_order(2):first_order(2) + first_order(4), first_order(1):first_order(1) + first_order(3)); % locate first order
-            centreimg = gpuArray(zeros(imgsize(1), imgsize(2))); % create a black image for placing first order
+            if obj.use_gpu()
+                centreimg = gpuArray(zeros(imgsize(1), imgsize(2))); % create a black image for placing first order
+            else
+                centreimg = zeros(imgsize(1), imgsize(2)); % create a black image for placing first order
+            end
             centreimg(floor(imgsize(1)/2):floor(imgsize(1)/2)+first_order(4), floor(imgsize(2)/2):floor(imgsize(2)/2)+first_order(3)) = fftimgcrop; % place first order at centre
         end
         
@@ -169,7 +175,9 @@ classdef reconstructor
         function [intensity_no_curve, phase_unwrap_no_curve, thickness, lower_limit, upper_limit, frame_peak_height, frame_volume] = process(obj, ~, center_fft, uplimit, lowlimit, invert, wavelength, ri, pixel_size)
             
             % reconstruct = ifft2(fftshift(centreimg)); % inverse fourier transform
-            center_fft = gpuArray(center_fft);
+            if obj.use_gpu()
+                center_fft = gpuArray(center_fft);
+            end
             reconstructed = ifft2(ifftshift(center_fft));
             intensity = abs(reconstructed); % intensity
             phase = angle(reconstructed); % phase
@@ -359,7 +367,12 @@ classdef reconstructor
             fftimg = fftshift(fft2(hologram)); % 2d fourier transform and translate to centre
             imgsize = size(fftimg);
             fftimgcrop = fftimg(first_order(2):first_order(2) + first_order(4), first_order(1):first_order(1) + first_order(3)); % locate first order
-            centreimg = gpuArray(zeros(imgsize(1), imgsize(2))); % create a black image for placing first order
+            
+            centreimg = zeros(imgsize(1), imgsize(2)); % create a black image for placing first order
+            
+            if obj.use_gpu()
+                centreimg = gpuArray(centreimg);
+            end
             centreimg(floor(imgsize(1)/2):floor(imgsize(1)/2)+first_order(4), floor(imgsize(2)/2):floor(imgsize(2)/2)+first_order(3)) = fftimgcrop; % place first order at centre
             
             reconstructed = ifft2(ifftshift(centreimg));
