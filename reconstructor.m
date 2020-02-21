@@ -417,7 +417,7 @@ classdef reconstructor
             phase_unwrapped = mat2gray(phase_unwrapped);
             
             % Convert to color
-            C = hsv(256);
+            C = hot(256); % Defines the colormap used.
             L = size(C,1);
             
             Gs = round(interp1(linspace(min(phase_unwrapped(:)),max(phase_unwrapped(:)),L),1:L,phase_unwrapped));
