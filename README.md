@@ -17,7 +17,10 @@ For processing, MATLAB R2019a and above is required.
 1. Download latest version of "mlappinstall" file from [Releases](https://github.com/PurelyWhite/DHM_MATLAB_ANUAOLAB/releases)
 2. Run installer
 3. In Matlab, open Apps tab, expand app list and click on DHM with Blackfly S.
-4. For details on how to use the program, please click on the [Wiki](https://github.com/PurelyWhite/DHM_MATLAB_ANUAOLAB/wiki).
+
+## Usage
+
+For details on how to use the program, please click on the [Wiki](https://github.com/PurelyWhite/DHM_MATLAB_ANUAOLAB/wiki).
 
 ## GPU Processing
 
