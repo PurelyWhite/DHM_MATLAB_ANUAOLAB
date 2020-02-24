@@ -355,8 +355,6 @@ classdef reconstructor
             if obj.use_gpu()
                 show_crop_region = gather(show_crop_region);
             end
-            imshow(show_crop_region, 'parent', uiaxes);
-            
         end
         
         function [obj, phase_unwrapped] = preview(obj, hologram, first_order, frame_count)
