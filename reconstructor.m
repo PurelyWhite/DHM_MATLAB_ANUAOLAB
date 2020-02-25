@@ -43,14 +43,37 @@ classdef reconstructor
             logimgmaxmin = (logimg - min(min(logimg)))/(max(max(logimg))-min(min(logimg))); % normalise
         end
         
-        function [centreimg,first_order] = manual_crop(obj, batch_process, preview, fftimg, first_order)
-            if batch_process <= 1
-                figure('name', 'Manual FFT Cropping');
-                imagesc(preview);
-                roi_manual = drawrectangle;
+        function [success,first_order] = manual_fft_select(~, preview)
+            figure('name', 'Select First Order Region');
+            imagesc(preview);
+            roi_manual = drawrectangle;
+            try
                 first_order = floor(roi_manual.Position);
-                close 'Manual FFT Cropping';
+            catch
+                success = false;
+                first_order = [];
+                return;
             end
+            close 'Select First Order Region';
+            success = true;
+        end
+        
+        function [success, first_order] = auto_fft_select(~, preview)
+            
+        end
+        
+        function [success, centreimg,first_order] = manual_crop(obj, batch_process, preview, fftimg, first_order)
+            success = true;
+            centreimg = [];
+            
+            if batch_process <= 1
+                [success, first_order] = obj.manual_fft_select(preview);
+                
+                if ~success
+                    return;
+                end
+            end
+            
             imgsize = size(fftimg); %determine image size
             fftimgcrop = fftimg(first_order(2):first_order(2) + first_order(4), first_order(1):first_order(1) + first_order(3)); % locate first order
             if obj.use_gpu()
@@ -61,7 +84,16 @@ classdef reconstructor
             centreimg(floor(imgsize(1)/2):floor(imgsize(1)/2)+first_order(4), floor(imgsize(2)/2):floor(imgsize(2)/2)+first_order(3)) = fftimgcrop; % place first order at centre
         end
         
-        function [centreimg,region_box] = auto_crop(~, fftimg, logimgmaxmin,noise_level)
+        function [success, centreimg,region_box] = auto_crop(obj, fftimg, logimgmaxmin,noise_level)
+            if obj.use_gpu()
+                fftimg = gather(fftimg);
+                logimgmaxmin = gather(logimgmaxmin);
+            end
+            
+            success = true;
+            centreimg = [];
+            region_box = [];
+            
             % fft image gaussian fit and get global threshold level
             sigma = 4;
             logimg_filtered = imgaussfilt(logimgmaxmin, sigma);
@@ -91,6 +123,12 @@ classdef reconstructor
                     end
                 end
                 thresh_increment = thresh_increment + thresh_step;
+                
+                if thresh_increment > max(logimg_filtered,[],'all')
+                    errordlg('Could not find threshold');
+                    success = false;
+                    return;
+                end
             end
             
             % get coordinates of region boundary
@@ -355,8 +393,6 @@ classdef reconstructor
             if obj.use_gpu()
                 show_crop_region = gather(show_crop_region);
             end
-            imshow(show_crop_region, 'parent', uiaxes);
-            
         end
         
         function [obj, phase_unwrapped] = preview(obj, hologram, first_order, frame_count)
@@ -417,7 +453,7 @@ classdef reconstructor
             phase_unwrapped = mat2gray(phase_unwrapped);
             
             % Convert to color
-            C = hsv(256);
+            C = hot(256); % Defines the colormap used.
             L = size(C,1);
             
             Gs = round(interp1(linspace(min(phase_unwrapped(:)),max(phase_unwrapped(:)),L),1:L,phase_unwrapped));

@@ -12,13 +12,5 @@ lib/Miguel_2D_unwrapper.cu
 lib/thrust_test.cu
 lib/Unwrap_TIE_DCT_Iter.m
 lib/unwrapper.m
-matlab_unwrapper.m
-test.m
-test_curve_removal.m
-test_dct.m
-test_phase_unwrappers.m
-thrust_test.mexw64
 examples/wrapped_phase_example_large.mat
-gpuTester.m
-gpuTester.m
 *.asv
