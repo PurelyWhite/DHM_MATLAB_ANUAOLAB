@@ -58,41 +58,13 @@ classdef reconstructor
             success = true;
         end
         
-        function [success, first_order] = auto_fft_select(~, preview)
-            
-        end
-        
-        function [success, centreimg,first_order] = manual_crop(obj, batch_process, preview, fftimg, first_order)
-            success = true;
-            centreimg = [];
-            
-            if batch_process <= 1
-                [success, first_order] = obj.manual_fft_select(preview);
-                
-                if ~success
-                    return;
-                end
-            end
-            
-            imgsize = size(fftimg); %determine image size
-            fftimgcrop = fftimg(first_order(2):first_order(2) + first_order(4), first_order(1):first_order(1) + first_order(3)); % locate first order
+        function [success, first_order] = auto_fft_select(obj, logimgmaxmin, noise_level)
             if obj.use_gpu()
-                centreimg = gpuArray(zeros(imgsize(1), imgsize(2))); % create a black image for placing first order
-            else
-                centreimg = zeros(imgsize(1), imgsize(2)); % create a black image for placing first order
-            end
-            centreimg(floor(imgsize(1)/2):floor(imgsize(1)/2)+first_order(4), floor(imgsize(2)/2):floor(imgsize(2)/2)+first_order(3)) = fftimgcrop; % place first order at centre
-        end
-        
-        function [success, centreimg,region_box] = auto_crop(obj, fftimg, logimgmaxmin,noise_level)
-            if obj.use_gpu()
-                fftimg = gather(fftimg);
                 logimgmaxmin = gather(logimgmaxmin);
             end
             
             success = true;
-            centreimg = [];
-            region_box = [];
+            first_order = [];
             
             % fft image gaussian fit and get global threshold level
             sigma = 4;
@@ -145,66 +117,59 @@ classdef reconstructor
             
             % setup region box
             region_pos = bw_prop(index).Centroid;
-            region_box = bw_prop(index).BoundingBox;
+            first_order = bw_prop(index).BoundingBox;
             % region_boundary = boundaries{index};
             
-            region_half_x = abs(region_box(1) - region_pos(1));
-            region_half_y = abs(region_box(2) - region_pos(2));
-            region_half_acu_x = region_box(3)/2;
-            region_half_acu_y = region_box(4)/2;
+            region_half_x = abs(first_order(1) - region_pos(1));
+            region_half_y = abs(first_order(2) - region_pos(2));
+            region_half_acu_x = first_order(3)/2;
+            region_half_acu_y = first_order(4)/2;
             
             % modify region box accoridng to relative centroid position
             if region_half_x > region_half_acu_x
-                region_box(3) = region_half_x * 2;
+                first_order(3) = region_half_x * 2;
             else
-                region_box(1) = region_pos(1) - region_half_x; % no change to upper left x?
+                first_order(1) = region_pos(1) - region_half_x; % no change to upper left x?
             end
             
             if region_half_y > region_half_acu_y
-                region_box(4) = region_half_y * 2;
+                first_order(4) = region_half_y * 2;
             else
-                region_box(2) = region_pos(2) - region_half_y; % no change to upper left y?
+                first_order(2) = region_pos(2) - region_half_y; % no change to upper left y?
             end
             
             % enlarge region box according to threshold increment?
             thresh_increment_amount = thresh_increment * 0;
-            region_box(1:2) = region_box(1:2) - region_box(3:4) * (thresh_increment_amount/2);
-            region_box(3:4) = region_box(3:4) + region_box(3:4) * (thresh_increment_amount);
-            region_box = floor(region_box);
+            first_order(1:2) = first_order(1:2) - first_order(3:4) * (thresh_increment_amount/2);
+            first_order(3:4) = first_order(3:4) + first_order(3:4) * (thresh_increment_amount);
+            first_order = floor(first_order);
             
             % create filter mask based on selected region
-            if region_box(2) + region_box(4) > imgsize(1)
-                region_box(4) = imgsize(1) - region_box(2);
+            if first_order(2) + first_order(4) > imgsize(1)
+                first_order(4) = imgsize(1) - first_order(2);
             end
-            if region_box(1) + region_box(3) > imgsize(2)
-                region_box(3) = imgsize(2) - region_box(1);
+            if first_order(1) + first_order(3) > imgsize(2)
+                first_order(3) = imgsize(2) - first_order(1);
             end
-            if region_box(1) == 0
-                region_box(1) = 1;
+            if first_order(1) == 0
+                first_order(1) = 1;
             end
-            if region_box(2) == 0
-                region_box(2) = 1;
-            end
-            
-            mask = zeros(imgsize(1), imgsize(2));
-            mask(   region_box(2) : (region_box(2) + region_box(4)), ...
-                region_box(1) : (region_box(1) + region_box(3))) = 1;
-            
-            % apply mask
-            % logimgmaxmin_masked = logimgmaxmin .* mask;
-            fftimg_masked = fftimg .* mask;
-            
-            % transfering fft region
-            centreimg = zeros(imgsize(1), imgsize(2)); % create a black image for placing first order;
-            region_box_dummy = region_box;
-            region_box_dummy(1) = round(imgsize(2)/2 - abs(region_pos(1) - region_box_dummy(1)));
-            region_box_dummy(2) = round(imgsize(1)/2 - abs(region_pos(2) - region_box_dummy(2)));
-            
-            window = fftimg_masked( region_box(2) : (region_box(2) + region_box(4)), ...
-                region_box(1) : (region_box(1) + region_box(3)));
-            centreimg(   region_box_dummy(2) : (region_box_dummy(2) + region_box_dummy(4)), ...
-                region_box_dummy(1) : (region_box_dummy(1) + region_box_dummy(3))) = window;
+            if first_order(2) == 0
+                first_order(2) = 1;
+            end 
         end
+        
+        function [centreimg] = crop_fft(obj, fftimg, first_order)
+            imgsize = size(fftimg); %determine image size
+            fftimgcrop = fftimg(first_order(2):first_order(2) + first_order(4), first_order(1):first_order(1) + first_order(3)); % locate first order
+            if obj.use_gpu()
+                centreimg = gpuArray(zeros(imgsize(1), imgsize(2))); % create a black image for placing first order
+            else
+                centreimg = zeros(imgsize(1), imgsize(2)); % create a black image for placing first order
+            end
+            centreimg(floor(imgsize(1)/2):floor(imgsize(1)/2)+first_order(4), floor(imgsize(2)/2):floor(imgsize(2)/2)+first_order(3)) = fftimgcrop; % place first order at centre
+        end
+        
         
         function [using_gpu] = use_gpu(~)
             using_gpu = gpuDeviceCount > 0;
@@ -319,9 +284,9 @@ classdef reconstructor
             end
         end
         
-        function [up, save_folder, image_folder_path] = batch_make_folder(~, desktop_path, image_folder_path, save_folder_name, save_height, save_volume)
+        function [up, save_folder, image_folder_path] = batch_make_folder(~, image_folder_path, save_folder_name, save_height, save_volume)
             up = dir(strcat(image_folder_path, '\*.tif'));
-            save_folder = strcat(desktop_path, save_folder_name);
+            save_folder = save_folder_name;
             mkdir(save_folder);
             mkdir([save_folder '\intensity']);
             mkdir([save_folder '\thickness']);
@@ -337,8 +302,8 @@ classdef reconstructor
             end
         end
         
-        function [video, start_frame, total_frames, save_folder, peak_height, volume, dim] = video_direct_batch_processing(~, desktop_path, save_folder_name, video_path, start, ending, skip, app_dim)
-            save_folder = strcat(desktop_path, save_folder_name);
+        function [video, start_frame, total_frames, save_folder, peak_height, volume, dim] = video_direct_batch_processing(~, save_folder_name, video_path, start, ending, skip, app_dim)
+            save_folder = save_folder_name;
             mkdir(save_folder);
             mkdir([save_folder '\Hologram']);
             mkdir([save_folder '\intensity']);
@@ -365,7 +330,6 @@ classdef reconstructor
         
         function [height_array, volume_array] = single_frame_data(~, file, save_height, save_volume, save_folder, count, height, height_array, volume, volume_array, thickness)
             if save_height == 1
-                writematrix(thickness, [save_folder '\thickness_data\' erase(file, '.tif') '.csv']);
                 height_array(count, 1) = count;
                 height_array(count, 2) = height;
             end
@@ -378,11 +342,11 @@ classdef reconstructor
         
         function all_frame_data(~, save_height, save_volume, height, volume, save_folder)
             if save_height == 1
-                writematrix(height, [save_folder '\thickness_data\peak_height.csv']);
+                writematrix(height, [save_folder '\peak_height.csv']);
             end
             
             if save_volume == 1
-                writematrix(volume, [save_folder '\volume_data\volume.csv']);
+                writematrix(volume, [save_folder '\volume.csv']);
             end
         end
         

@@ -3,8 +3,8 @@ classdef vid2img < handle
         function obj = vid2img()
         end
         
-        function folder_path = make_folder(~, desktop_path, folder_name)
-            folder_path = strcat(desktop_path, folder_name);
+        function folder_path = make_folder(~, folder_name)
+            folder_path = strcat(folder_name);
             mkdir(folder_path);
             mkdir([folder_path '\cropped']);
             mkdir([folder_path '\original']);
