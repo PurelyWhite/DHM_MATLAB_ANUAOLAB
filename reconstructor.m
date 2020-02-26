@@ -414,13 +414,13 @@ classdef reconstructor
             conv_mask = ones(5, 5) / 5^2;
             phase_unwrapped = conv2(phase_unwrapped  , conv_mask, 'same');
             phase_unwrapped(phase_unwrapped < 0) = 0;
-            phase_unwrapped = mat2gray(phase_unwrapped);
-            
+            % phase_unwrapped = mat2gray(phase_unwrapped);
             % Convert to color
-            C = hot(256); % Defines the colormap used.
+            C = parula(256); % Defines the colormap used.
             L = size(C,1);
             
-            Gs = round(interp1(linspace(min(phase_unwrapped(:)),max(phase_unwrapped(:)),L),1:L,phase_unwrapped));
+            max(phase_unwrapped(:))
+            Gs = round(interp1(linspace(0,max(max(phase_unwrapped(:)),20),L),1:L,phase_unwrapped)); % 
             phase_unwrapped = reshape(C(Gs,:),[size(Gs) 3]);
             
             if obj.use_gpu()
