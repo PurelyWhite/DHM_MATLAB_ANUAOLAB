@@ -1,15 +1,15 @@
 <deployment-project plugin="plugin.apptool" plugin-version="1.0">
-  <configuration build-checksum="2672427960" file="C:\Users\Tienan Xu\Documents\DO_NOT_DELETE\DHM_MATLAB_ANUAOLAB\DHM with Blackfly S.prj" location="C:\Users\Tienan Xu\Documents\DO_NOT_DELETE\DHM_MATLAB_ANUAOLAB" name="DHM with Blackfly S" target="target.mlapps" target-name="Package App">
+  <configuration build-checksum="1367261740" file="I:\DHM_MATLAB_ANUAOLAB\DHM with Blackfly S.prj" location="I:\DHM_MATLAB_ANUAOLAB" name="DHM with Blackfly S" target="target.mlapps" target-name="Package App">
     <param.appname>DHM with Blackfly S</param.appname>
-    <param.authnamewatermark>Tienan Xu</param.authnamewatermark>
+    <param.authnamewatermark>Tienan Xu &amp; Zhiduo Zhang</param.authnamewatermark>
     <param.email />
-    <param.company />
+    <param.company>Applied Optics Lab - ANU</param.company>
     <param.icon />
     <param.icons />
     <param.summary>A comprehensive program for Digital Holography Microscopy using FLIR BFS-U3-32S4 camera.</param.summary>
     <param.description />
-    <param.screenshot>C:\Users\Tienan Xu\AppData\Local\Temp\tp7da036d1_2486_465c_acea_022e3cbf6c5c.png</param.screenshot>
-    <param.version>3.1</param.version>
+    <param.screenshot>C:\Users\Duo\AppData\Local\Temp\tp01fe8761_84eb_4e50_9555_143f11905a39.png</param.screenshot>
+    <param.version>3.4</param.version>
     <param.products.name />
     <param.products.id />
     <param.products.version />
@@ -20,7 +20,6 @@
     <param.guid>7bde3d0e-a51b-4172-92f2-973e6fdcf589</param.guid>
     <unset>
       <param.email />
-      <param.company />
       <param.icon />
       <param.icons />
       <param.description />
@@ -33,55 +32,24 @@
       <file>${PROJECT_ROOT}\test_ui_combined_input.mlapp</file>
     </fileset.main>
     <fileset.depfun>
-      <file>C:\Users\Tienan Xu\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\DHMwithBlackflyS\camera.m</file>
-      <file>C:\Users\Tienan Xu\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\DHMwithBlackflyS\downsampled_curve.m</file>
-      <file>C:\Users\Tienan Xu\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\DHMwithBlackflyS\GPU_Miguel_2D_unwrapper.mexw64</file>
-      <file>C:\Users\Tienan Xu\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\DHMwithBlackflyS\reconstructor.m</file>
-      <file>C:\Users\Tienan Xu\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\DHMwithBlackflyS\recorder.m</file>
-      <file>C:\Users\Tienan Xu\AppData\Roaming\MathWorks\MATLAB Add-Ons\Apps\DHMwithBlackflyS\vid2img.m</file>
+      <file>${PROJECT_ROOT}\camera.m</file>
+      <file>${PROJECT_ROOT}\downsampled_curve.m</file>
+      <file>${PROJECT_ROOT}\reconstructor.m</file>
+      <file>${PROJECT_ROOT}\recorder.m</file>
+      <file>${PROJECT_ROOT}\vid2img.m</file>
     </fileset.depfun>
     <fileset.resources>
+      <file>${PROJECT_ROOT}\icons</file>
       <file>${PROJECT_ROOT}\lib</file>
     </fileset.resources>
     <fileset.package />
     <build-deliverables>
-      <file location="C:\Users\Tienan Xu\Documents\DO_NOT_DELETE" name="DHM_MATLAB_ANUAOLAB" optional="false">C:\Users\Tienan Xu\Documents\DO_NOT_DELETE\DHM_MATLAB_ANUAOLAB</file>
+      <file location="I:\" name="DHM_MATLAB_ANUAOLAB" optional="false">I:\DHM_MATLAB_ANUAOLAB</file>
     </build-deliverables>
     <workflow />
     <matlab>
-      <root>C:\Program Files\MATLAB\R2019b</root>
-      <toolboxes>
-        <toolbox name="matlabcoder" />
-        <toolbox name="embeddedcoder" />
-        <toolbox name="fixedpoint" />
-        <toolbox name="matlabhdlcoder" />
-        <toolbox name="neuralnetwork" />
-      </toolboxes>
-      <toolbox>
-        <matlabcoder>
-          <enabled>true</enabled>
-        </matlabcoder>
-      </toolbox>
-      <toolbox>
-        <embeddedcoder>
-          <enabled>true</enabled>
-        </embeddedcoder>
-      </toolbox>
-      <toolbox>
-        <fixedpoint>
-          <enabled>true</enabled>
-        </fixedpoint>
-      </toolbox>
-      <toolbox>
-        <matlabhdlcoder>
-          <enabled>true</enabled>
-        </matlabhdlcoder>
-      </toolbox>
-      <toolbox>
-        <neuralnetwork>
-          <enabled>true</enabled>
-        </neuralnetwork>
-      </toolbox>
+      <root>H:\Programs\Matlab2019b</root>
+      <toolboxes />
     </matlab>
     <platform>
       <unix>false</unix>
