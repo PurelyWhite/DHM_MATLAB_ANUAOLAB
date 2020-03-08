@@ -1,5 +1,7 @@
 # MATLAB Phase Retrieval for Digital Holographic Microscopy
 
+![Screenshot](/wiki/blob/GUI_screenshot.PNG)
+
 ## About
 
 Matlab App for Off-Axis Digital Holographic Microscopy phase retrieval. The program is intented to work for all off-axis DHM images. It also has a recording setup for the FLIR Blackfly S camera.
