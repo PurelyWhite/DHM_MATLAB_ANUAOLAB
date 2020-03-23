@@ -7,7 +7,9 @@ classdef recorder < handle
         end
         function start(obj, camera, filepath)
             obj.diskLogger = VideoWriter(filepath, 'Grayscale AVI');
-            obj.diskLogger.FrameRate = camera.src.AcquisitionFrameRate;
+            if strcmp(camera.model, 'blackfly_s')
+                obj.diskLogger.FrameRate = camera.src.AcquisitionFrameRate;
+            end
             camera.vid.DiskLogger = obj.diskLogger;
             start(camera.vid);
         end
