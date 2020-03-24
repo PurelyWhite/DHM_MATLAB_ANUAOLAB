@@ -10,7 +10,7 @@ classdef camera < handle
     methods
         function obj = camera(cam_model, exposure)
             hw_status = imaqhwinfo;
-            if strcmp(cam_model, 'blackfly s')
+            if strcmp(cam_model, 'blackfly_s')
                 if ismember(obj.blackfly_s_cam, hw_status.InstalledAdaptors)
                     device_id = cell2mat(imaqhwinfo(obj.blackfly_s_cam).DeviceIDs);
                     obj.model = 'blackfly_s';
