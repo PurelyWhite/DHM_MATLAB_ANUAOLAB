@@ -3,6 +3,7 @@ classdef reconstructor
         curve
         unwrapper
         img_size
+        useGPU
     end
     methods
         function obj = reconstructor()
@@ -169,8 +170,7 @@ classdef reconstructor
             end
             centreimg(floor(imgsize(1)/2):floor(imgsize(1)/2)+first_order(4), floor(imgsize(2)/2):floor(imgsize(2)/2)+first_order(3)) = fftimgcrop; % place first order at centre
         end
-        
-        
+              
         function [using_gpu] = use_gpu(~)
             using_gpu = gpuDeviceCount > 0;
         end
@@ -204,10 +204,10 @@ classdef reconstructor
                 phase_unwrap = - phase_unwrap;
             end
             
-            imgsize = size(center_fft);
-            resize = 10;
-            intensity = intensity(resize:(imgsize(1)-resize), resize:(imgsize(2)-resize));
-            phase_unwrap = phase_unwrap(resize:(imgsize(1)-resize), resize:(imgsize(2)-resize));
+            %imgsize = size(center_fft);
+            %resize = 10;
+            %intensity = intensity(resize:(imgsize(1)-resize), resize:(imgsize(2)-resize));
+            %phase_unwrap = phase_unwrap(resize:(imgsize(1)-resize), resize:(imgsize(2)-resize));
             
             % curve removal
             if sum(size(obj.curve)) == 0
@@ -360,6 +360,9 @@ classdef reconstructor
         end
         
         function [obj, phase_unwrapped] = preview(obj, hologram, first_order, frame_count)
+            % PREVIEW generates unwrapped phase from hologram for given
+            % first order.
+            
             if obj.use_gpu()
                 hologram = gpuArray(hologram);
             end
