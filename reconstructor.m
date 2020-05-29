@@ -175,7 +175,7 @@ classdef reconstructor
             using_gpu = gpuDeviceCount > 0;
         end
         
-        function [intensity_no_curve, phase_unwrap_no_curve, thickness, lower_limit, upper_limit, frame_peak_height, frame_volume] = process(obj, ~, center_fft, uplimit, lowlimit, invert, wavelength, ri, pixel_size)
+        function [reconstructed, intensity_no_curve, phase_unwrap_no_curve, thickness, lower_limit, upper_limit, frame_peak_height, frame_volume] = process(obj, ~, center_fft, uplimit, lowlimit, invert, wavelength, ri, pixel_size)
             
             % reconstruct = ifft2(fftshift(centreimg)); % inverse fourier transform
             if obj.use_gpu()
@@ -292,6 +292,7 @@ classdef reconstructor
             mkdir([save_folder '\thickness']);
             mkdir([save_folder '\fft']);
             mkdir([save_folder '\mesh']);
+            mkdir([save_folder '\complex_amplitude']);
             
             if save_height == 1
                 mkdir([save_folder '\thickness_data']);
@@ -312,6 +313,7 @@ classdef reconstructor
             mkdir([save_folder '\mesh']);
             mkdir([save_folder '\thickness_data']);
             mkdir([save_folder '\volume_data']);
+            mkdir([save_folder '\complex_amplitude']);
             
             video = VideoReader(video_path);
             start_frame = start * video.FrameRate + 1;
