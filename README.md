@@ -16,9 +16,18 @@ For processing, MATLAB R2019a and above is required.
 
 ## Installation & Running
 
-1. Download latest version of "mlappinstall" file from [Releases](https://github.com/PurelyWhite/DHM_MATLAB_ANUAOLAB/releases)
-2. Run installer
-3. In Matlab, open Apps tab, expand app list and click on DHM with Blackfly S.
+1. Make sure the following add-ons have been installed into your Matlab installation:
+
+		a. Image Processing Toolbox
+		b. Parallel Computing Toolbox 
+		c. Signals Processing Toolbox 
+		d. Curve Fitting Toolbox
+
+Help on how to install add-ons can be found [here](https://au.mathworks.com/help/matlab/matlab_env/get-add-ons.html)
+
+2. Download latest version of "mlappinstall" file from [Releases](https://github.com/PurelyWhite/DHM_MATLAB_ANUAOLAB/releases)
+3. Run installer
+4. In Matlab, open Apps tab, expand app list and click on DHM with Blackfly S.
 
 ## Usage
 
