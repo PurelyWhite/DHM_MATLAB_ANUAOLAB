@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.apptool" plugin-version="1.0">
-  <configuration build-checksum="1664493823" file="C:\Users\xut\Documents\GitHub\DHM_MATLAB_ANUAOLAB\DHM with Blackfly S.prj" location="C:\Users\xut\Documents\GitHub\DHM_MATLAB_ANUAOLAB" name="DHM with Blackfly S" target="target.mlapps" target-name="Package App">
+  <configuration build-checksum="1367261740" file="I:\DHM_MATLAB_ANUAOLAB\DHM with Blackfly S.prj" location="I:\DHM_MATLAB_ANUAOLAB" name="DHM with Blackfly S" target="target.mlapps" target-name="Package App">
     <param.appname>DHM with Blackfly S</param.appname>
     <param.authnamewatermark>Tienan Xu &amp; Zhiduo Zhang</param.authnamewatermark>
     <param.email />
@@ -8,8 +8,8 @@
     <param.icons />
     <param.summary>A comprehensive program for Digital Holography Microscopy using FLIR BFS-U3-32S4 camera.</param.summary>
     <param.description />
-    <param.screenshot />
-    <param.version>3.5</param.version>
+    <param.screenshot>C:\Users\Duo\AppData\Local\Temp\tp01fe8761_84eb_4e50_9555_143f11905a39.png</param.screenshot>
+    <param.version>3.4</param.version>
     <param.products.name />
     <param.products.id />
     <param.products.version />
@@ -23,7 +23,6 @@
       <param.icon />
       <param.icons />
       <param.description />
-      <param.screenshot />
       <param.products.name />
       <param.products.id />
       <param.products.version />
@@ -45,43 +44,12 @@
     </fileset.resources>
     <fileset.package />
     <build-deliverables>
-      <file location="C:\Users\xut\Documents\GitHub" name="DHM_MATLAB_ANUAOLAB" optional="false">C:\Users\xut\Documents\GitHub\DHM_MATLAB_ANUAOLAB</file>
+      <file location="I:\" name="DHM_MATLAB_ANUAOLAB" optional="false">I:\DHM_MATLAB_ANUAOLAB</file>
     </build-deliverables>
     <workflow />
     <matlab>
-      <root>C:\Program Files\MATLAB\R2019b</root>
-      <toolboxes>
-        <toolbox name="matlabcoder" />
-        <toolbox name="embeddedcoder" />
-        <toolbox name="fixedpoint" />
-        <toolbox name="matlabhdlcoder" />
-        <toolbox name="neuralnetwork" />
-      </toolboxes>
-      <toolbox>
-        <matlabcoder>
-          <enabled>true</enabled>
-        </matlabcoder>
-      </toolbox>
-      <toolbox>
-        <embeddedcoder>
-          <enabled>true</enabled>
-        </embeddedcoder>
-      </toolbox>
-      <toolbox>
-        <fixedpoint>
-          <enabled>true</enabled>
-        </fixedpoint>
-      </toolbox>
-      <toolbox>
-        <matlabhdlcoder>
-          <enabled>true</enabled>
-        </matlabhdlcoder>
-      </toolbox>
-      <toolbox>
-        <neuralnetwork>
-          <enabled>true</enabled>
-        </neuralnetwork>
-      </toolbox>
+      <root>H:\Programs\Matlab2019b</root>
+      <toolboxes />
     </matlab>
     <platform>
       <unix>false</unix>
