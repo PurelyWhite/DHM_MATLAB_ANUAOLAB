@@ -167,7 +167,7 @@ classdef reconstructor
             else
                 centreimg = zeros(imgsize(1), imgsize(2)); % create a black image for placing first order
             end
-            centreimg(floor(imgsize(1)/2):floor(imgsize(1)/2)+first_order(4), floor(imgsize(2)/2):floor(imgsize(2)/2)+first_order(3)) = fftimgcrop; % place first order at centre
+            centreimg(floor(imgsize(1)/2-first_order(4)/2):floor(imgsize(1)/2+first_order(4)/2), floor(imgsize(2)/2-first_order(3)/2):floor(imgsize(2)/2+first_order(3)/2)) = fftimgcrop; % place first order at centre
         end
         
         
@@ -373,7 +373,7 @@ classdef reconstructor
             if obj.use_gpu()
                 centreimg = gpuArray(centreimg);
             end
-            centreimg(floor(imgsize(1)/2):floor(imgsize(1)/2)+first_order(4), floor(imgsize(2)/2):floor(imgsize(2)/2)+first_order(3)) = fftimgcrop; % place first order at centre
+            centreimg(floor(imgsize(1)/2-first_order(4)/2):floor(imgsize(1)/2+first_order(4)/2), floor(imgsize(2)/2-first_order(3)/2):floor(imgsize(2)/2+first_order(3)/2)) = fftimgcrop; % place first order at centre
             
             reconstructed = ifft2(ifftshift(centreimg));
             phase = angle(reconstructed); % phase
