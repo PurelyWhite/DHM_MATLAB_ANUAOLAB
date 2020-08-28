@@ -1,14 +1,10 @@
 # MATLAB Phase Retrieval for Digital Holographic Microscopy
 
+![Screenshot](/wiki/blob/GUI_screenshot.PNG)
+
 ## About
 
 Matlab App for Off-Axis Digital Holographic Microscopy phase retrieval. The program is intented to work for all off-axis DHM images. It also has a recording setup for the FLIR Blackfly S camera.
-
-## Installation & Running
-
-1. Download latest version of "mlappinstall" file from [Releases](https://github.com/PurelyWhite/DHM_MATLAB_ANUAOLAB/releases)
-2. Run installer
-3. In Matlab, open Apps tab, expand app list and click on DHM with Blackfly S.
 
 ## System Requirement
 ### MATLAB Version
@@ -18,11 +14,34 @@ For imaging using FLIR Blackfly S, MATLAB R2019b is required, with [FLIR Spinnak
 
 For processing, MATLAB R2019a and above is required.
 
+## Installation & Running
+
+1. Make sure the following add-ons have been installed into your Matlab installation:
+
+		a. Image Processing Toolbox
+		b. Parallel Computing Toolbox 
+		c. Signals Processing Toolbox 
+		d. Curve Fitting Toolbox
+
+Help on how to install add-ons can be found [here](https://au.mathworks.com/help/matlab/matlab_env/get-add-ons.html)
+
+2. Download latest version of "mlappinstall" file from [Releases](https://github.com/PurelyWhite/DHM_MATLAB_ANUAOLAB/releases)
+3. Run installer
+4. In Matlab, open Apps tab, expand app list and click on DHM with Blackfly S.
+
+## Usage
+
+For details on how to use the program, please click on the [Wiki](https://github.com/PurelyWhite/DHM_MATLAB_ANUAOLAB/wiki).
+
 ## GPU Processing
 
 If a CUDA supported Nvidia GPU is available, the program will automatically use the GPU where appropriate.
 
 CUDA can be installed via the the [Nvidia site](https://developer.nvidia.com/cuda-downloads).
+
+## Bug submission
+
+Please submit all bugs and feature requests via the [Issues](https://github.com/PurelyWhite/DHM_MATLAB_ANUAOLAB/issues) page, and attach screenshots where possible.
 
 ## Publications
 
