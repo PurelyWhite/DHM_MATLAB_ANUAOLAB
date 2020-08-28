@@ -1,14 +1,14 @@
 <deployment-project plugin="plugin.apptool" plugin-version="1.0">
-  <configuration build-checksum="1367261740" file="I:\DHM_MATLAB_ANUAOLAB\DHM with Blackfly S.prj" location="I:\DHM_MATLAB_ANUAOLAB" name="DHM with Blackfly S" target="target.mlapps" target-name="Package App">
+  <configuration build-checksum="3079942140" file="I:\DHM_MATLAB_ANUAOLAB\DHM with Blackfly S.prj" location="I:\DHM_MATLAB_ANUAOLAB" name="DHM with Blackfly S" target="target.mlapps" target-name="Package App">
     <param.appname>DHM with Blackfly S</param.appname>
-    <param.authnamewatermark>Tienan Xu &amp; Zhiduo Zhang</param.authnamewatermark>
+    <param.authnamewatermark>Tienan Xu</param.authnamewatermark>
     <param.email />
     <param.company>Applied Optics Lab - ANU</param.company>
     <param.icon />
     <param.icons />
     <param.summary>A comprehensive program for Digital Holography Microscopy using FLIR BFS-U3-32S4 camera.</param.summary>
     <param.description />
-    <param.screenshot>C:\Users\Duo\AppData\Local\Temp\tp01fe8761_84eb_4e50_9555_143f11905a39.png</param.screenshot>
+    <param.screenshot>C:\Users\Duo\AppData\Local\Temp\tp77bbd016_d3e9_4751_b99f_26ed014ecf25.png</param.screenshot>
     <param.version>3.4</param.version>
     <param.products.name />
     <param.products.id />
