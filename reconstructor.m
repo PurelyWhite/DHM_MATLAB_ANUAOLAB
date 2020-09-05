@@ -361,7 +361,7 @@ classdef reconstructor
             end
         end
         
-        function [obj, phase_unwrapped] = preview(obj, hologram, first_order, frame_count)
+        function [obj, phase_unwrapped] = preview(obj, hologram, first_order, frame_count, max_phase_height=20)
             % PREVIEW generates unwrapped phase from hologram for given
             % first order.
             
@@ -425,7 +425,7 @@ classdef reconstructor
             L = size(C,1);
             
             max(phase_unwrapped(:))
-            Gs = round(interp1(linspace(0,max(max(phase_unwrapped(:)),20),L),1:L,phase_unwrapped)); % 
+            Gs = round(interp1(linspace(0,max(max(phase_unwrapped(:)),max_phase_height),L),1:L,phase_unwrapped)); % 
             phase_unwrapped = reshape(C(Gs,:),[size(Gs) 3]);
             
             if obj.use_gpu()
