@@ -361,7 +361,7 @@ classdef reconstructor
             end
         end
         
-        function [obj, phase_unwrapped] = preview(obj, hologram, first_order, frame_count, max_phase_height=20)
+        function [obj, phase_unwrapped] = preview(obj, hologram, first_order, frame_count, max_phase_height)
             % PREVIEW generates unwrapped phase from hologram for given
             % first order.
             
