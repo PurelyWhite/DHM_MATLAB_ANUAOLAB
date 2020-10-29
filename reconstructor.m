@@ -293,6 +293,7 @@ classdef reconstructor
             mkdir([save_folder '\fft']);
             mkdir([save_folder '\mesh']);
             mkdir([save_folder '\complex_amplitude']);
+            mkdir([save_folder '\Hologram']);
             
             if save_height == 1
                 mkdir([save_folder '\thickness_data']);
