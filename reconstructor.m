@@ -425,7 +425,6 @@ classdef reconstructor
             C = parula(256); % Defines the colormap used.
             L = size(C,1);
             
-            max(phase_unwrapped(:))
             Gs = round(interp1(linspace(0,max(max(phase_unwrapped(:)),max_phase_height),L),1:L,phase_unwrapped)); % 
             phase_unwrapped = reshape(C(Gs,:),[size(Gs) 3]);
             
