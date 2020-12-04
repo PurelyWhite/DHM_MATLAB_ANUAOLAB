@@ -422,7 +422,8 @@ classdef reconstructor
             phase_unwrapped(phase_unwrapped < 0) = 0;
             % phase_unwrapped = mat2gray(phase_unwrapped);
             % Convert to color
-            C = parula(256); % Defines the colormap used.
+            LUTMap = load('lib/blue_orange_icb-LUT.mat').LUTMap;
+            C = LUTMap; % Defines the colormap used.
             L = size(C,1);
             
             Gs = round(interp1(linspace(0,max(max(phase_unwrapped(:)),max_phase_height),L),1:L,phase_unwrapped)); % 
