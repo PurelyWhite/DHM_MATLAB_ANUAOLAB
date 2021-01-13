@@ -168,7 +168,7 @@ classdef reconstructor
             else
                 centreimg = zeros(imgsize(1), imgsize(2)); % create a black image for placing first order
             end
-            centreimg(floor(imgsize(1)/2):floor(imgsize(1)/2)+first_order(4), floor(imgsize(2)/2):floor(imgsize(2)/2)+first_order(3)) = fftimgcrop; % place first order at centre
+            centreimg(floor(imgsize(1)/2-first_order(4)/2):floor(imgsize(1)/2+first_order(4)/2), floor(imgsize(2)/2-first_order(3)/2):floor(imgsize(2)/2+first_order(3)/2)) = fftimgcrop; % place first order at centre
         end
               
         function [using_gpu] = use_gpu(~)
@@ -293,6 +293,7 @@ classdef reconstructor
             mkdir([save_folder '\fft']);
             mkdir([save_folder '\mesh']);
             mkdir([save_folder '\complex_amplitude']);
+            mkdir([save_folder '\Hologram']);
             
             if save_height == 1
                 mkdir([save_folder '\thickness_data']);
@@ -361,7 +362,7 @@ classdef reconstructor
             end
         end
         
-        function [obj, phase_unwrapped] = preview(obj, hologram, first_order, frame_count)
+        function [obj, phase_unwrapped] = preview(obj, hologram, first_order, frame_count, max_phase_height)
             % PREVIEW generates unwrapped phase from hologram for given
             % first order.
             
@@ -378,7 +379,7 @@ classdef reconstructor
             if obj.use_gpu()
                 centreimg = gpuArray(centreimg);
             end
-            centreimg(floor(imgsize(1)/2):floor(imgsize(1)/2)+first_order(4), floor(imgsize(2)/2):floor(imgsize(2)/2)+first_order(3)) = fftimgcrop; % place first order at centre
+            centreimg(floor(imgsize(1)/2-first_order(4)/2):floor(imgsize(1)/2+first_order(4)/2), floor(imgsize(2)/2-first_order(3)/2):floor(imgsize(2)/2+first_order(3)/2)) = fftimgcrop; % place first order at centre
             
             reconstructed = ifft2(ifftshift(centreimg));
             phase = angle(reconstructed); % phase
@@ -421,11 +422,11 @@ classdef reconstructor
             phase_unwrapped(phase_unwrapped < 0) = 0;
             % phase_unwrapped = mat2gray(phase_unwrapped);
             % Convert to color
-            C = parula(256); % Defines the colormap used.
+            LUTMap = load('lib/blue_orange_icb-LUT.mat').LUTMap;
+            C = LUTMap; % Defines the colormap used.
             L = size(C,1);
             
-            max(phase_unwrapped(:))
-            Gs = round(interp1(linspace(0,max(max(phase_unwrapped(:)),20),L),1:L,phase_unwrapped)); % 
+            Gs = round(interp1(linspace(0,max(max(phase_unwrapped(:)),max_phase_height),L),1:L,phase_unwrapped)); % 
             phase_unwrapped = reshape(C(Gs,:),[size(Gs) 3]);
             
             if obj.use_gpu()
