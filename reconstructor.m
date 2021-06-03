@@ -369,7 +369,7 @@ classdef reconstructor
             if obj.use_gpu()
                 hologram = gpuArray(hologram);
             end
-            
+                        
             fftimg = fftshift(fft2(hologram)); % 2d fourier transform and translate to centre
             imgsize = size(fftimg);
             fftimgcrop = fftimg(first_order(2):first_order(2) + first_order(4), first_order(1):first_order(1) + first_order(3)); % locate first order
@@ -384,6 +384,10 @@ classdef reconstructor
             
             % digitally refocus
             [imx,imy]=size(centreimg);
+            
+            pixel_size = pixel_size * 1e-6;
+            wavelength = wavelength *(10^-9);
+            digital_refocus_distance = digital_refocus_distance * 1e-6;
            
             kx0=linspace(-pi/pixel_size,pi/pixel_size,imy); 
             ky0=linspace(-pi/pixel_size,pi/pixel_size,imx);
