@@ -393,6 +393,10 @@ classdef reconstructor
             kk=k0^2-kx.^2-ky.^2;
             kk(kk<0) = 0;
             
+            if obj.use_gpu()
+                kk = gpuArray(kk);
+            end
+            
             shiftf=-sqrt(kk)*(digital_refocus_distance);
             ccdImfft0=abs(centreimg).*exp(1i*((angle(centreimg))+shiftf));
 
