@@ -362,14 +362,14 @@ classdef reconstructor
             end
         end
         
-        function [obj, phase_unwrapped] = preview(obj, hologram, first_order, frame_count, max_phase_height)
+        function [obj, phase_unwrapped] = preview(obj, hologram, first_order, frame_count, max_phase_height, wavelength, pixel_size, digital_refocus_distance)
             % PREVIEW generates unwrapped phase from hologram for given
             % first order.
             
             if obj.use_gpu()
                 hologram = gpuArray(hologram);
             end
-            
+                        
             fftimg = fftshift(fft2(hologram)); % 2d fourier transform and translate to centre
             imgsize = size(fftimg);
             fftimgcrop = fftimg(first_order(2):first_order(2) + first_order(4), first_order(1):first_order(1) + first_order(3)); % locate first order
@@ -381,9 +381,33 @@ classdef reconstructor
             end
             centreimg(floor(imgsize(1)/2-first_order(4)/2):floor(imgsize(1)/2+first_order(4)/2), floor(imgsize(2)/2-first_order(3)/2):floor(imgsize(2)/2+first_order(3)/2)) = fftimgcrop; % place first order at centre
             
-            reconstructed = ifft2(ifftshift(centreimg));
-            phase = angle(reconstructed); % phase
             
+            % digitally refocus
+            [imx,imy]=size(centreimg);
+            
+            pixel_size = pixel_size * 1e-6;
+            wavelength = wavelength *(10^-9);
+            digital_refocus_distance = digital_refocus_distance * 1e-6;
+           
+            kx0=linspace(-pi/pixel_size,pi/pixel_size,imy); 
+            ky0=linspace(-pi/pixel_size,pi/pixel_size,imx);
+            kx=repmat(kx0,imx,1);
+            ky=repmat(ky0.',1,imy);
+            k0=2*pi/wavelength;
+            kk=k0^2-kx.^2-ky.^2;
+            kk(kk<0) = 0;
+            
+            if obj.use_gpu()
+                kk = gpuArray(kk);
+            end
+            
+            shiftf=-sqrt(kk)*(digital_refocus_distance);
+            ccdImfft0=abs(centreimg).*exp(1i*((angle(centreimg))+shiftf));
+
+            % Get phase            
+            reconstructed = ifft2(ifftshift(ccdImfft0));
+            phase = angle(reconstructed); % phase
+                       
             % unwrap
             if obj.use_gpu()
                 phase_unwrap = obj.unwrapper.unwrap(phase);

@@ -48,7 +48,7 @@ classdef camera < handle
                     obj.src.ReverseY = 'False';
                     
                     diskLogger = VideoWriter('default.avi', 'Grayscale AVI');
-                    diskLogger.FrameRate = obj.src.AcquisitionResultingFrameRate;
+                    diskLogger.FrameRate = double(max([1.0, obj.src.AcquisitionResultingFrameRate]));
                     obj.vid.DiskLogger = diskLogger;
                 end
             elseif strcmp(cam_model, 'pixelfly')
