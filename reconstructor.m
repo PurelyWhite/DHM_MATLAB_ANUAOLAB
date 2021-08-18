@@ -175,12 +175,33 @@ classdef reconstructor
             using_gpu = gpuDeviceCount > 0;
         end
         
-        function [reconstructed, intensity_no_curve, phase_unwrap_no_curve, thickness, lower_limit, upper_limit, frame_peak_height, frame_volume] = process(obj, ~, center_fft, uplimit, lowlimit, invert, wavelength, ri, pixel_size)
+        function [reconstructed, intensity_no_curve, phase_unwrap_no_curve, thickness, lower_limit, upper_limit, frame_peak_height, frame_volume] = process(obj, ~, centreimg, uplimit, lowlimit, invert, wavelength, ri, pixel_size)
+            % digitally refocus
+            [imx,imy]=size(centreimg);
             
+            pixel_size = pixel_size * 1e-6;
+            wavelength = wavelength *(10^-9);
+            digital_refocus_distance = digital_refocus_distance * 1e-6;
+           
+            kx0=linspace(-pi/pixel_size,pi/pixel_size,imy); 
+            ky0=linspace(-pi/pixel_size,pi/pixel_size,imx);
+            kx=repmat(kx0,imx,1);
+            ky=repmat(ky0.',1,imy);
+            k0=2*pi/wavelength;
+            kk=k0^2-kx.^2-ky.^2;
+            kk(kk<0) = 0;
+            
+            if obj.use_gpu()
+                kk = gpuArray(kk);
+            end
+            
+            shiftf=-sqrt(kk)*(digital_refocus_distance);
+            ccdImfft0=abs(centreimg).*exp(1i*((angle(centreimg))+shiftf));
             % reconstruct = ifft2(fftshift(centreimg)); % inverse fourier transform
             if obj.use_gpu()
-                center_fft = gpuArray(center_fft);
+                center_fft = gpuArray(ccdImfft0);
             end
+            
             reconstructed = ifft2(ifftshift(center_fft));
             intensity = abs(reconstructed); % intensity
             phase = angle(reconstructed); % phase
