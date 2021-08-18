@@ -175,7 +175,7 @@ classdef reconstructor
             using_gpu = gpuDeviceCount > 0;
         end
         
-        function [reconstructed, intensity_no_curve, phase_unwrap_no_curve, thickness, lower_limit, upper_limit, frame_peak_height, frame_volume] = process(obj, ~, centreimg, uplimit, lowlimit, invert, wavelength, ri, pixel_size)
+        function [reconstructed, intensity_no_curve, phase_unwrap_no_curve, thickness, lower_limit, upper_limit, frame_peak_height, frame_volume] = process(obj, ~, centreimg, uplimit, lowlimit, invert, wavelength, ri, pixel_size, digital_refocus_distance)
             % digitally refocus
             [imx,imy]=size(centreimg);
             
