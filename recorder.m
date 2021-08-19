@@ -12,6 +12,7 @@ classdef recorder < handle
             end
             camera.vid.DiskLogger = obj.diskLogger;
             start(camera.vid);
+            
         end
         function stop(~, camera)
             stop(camera.vid);

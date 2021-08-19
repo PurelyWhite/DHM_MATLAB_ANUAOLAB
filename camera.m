@@ -8,7 +8,7 @@ classdef camera < handle
         
     end
     methods
-        function obj = camera(cam_model, exposure)
+        function obj = camera(cam_model, exposure )
             hw_status = imaqhwinfo;
             if strcmp(cam_model, 'blackfly_s')
                 if ismember(obj.blackfly_s_cam, hw_status.InstalledAdaptors)
@@ -16,6 +16,7 @@ classdef camera < handle
                     obj.model = 'blackfly_s';
                     obj.vid = videoinput(obj.blackfly_s_cam, device_id, 'Mono16');
                     obj.vid.FramesPerTrigger = Inf;
+                    obj.vid.FrameGrabInterval = 1;
                     obj.vid.ReturnedColorspace = 'grayscale';
                     obj.vid.LoggingMode = 'disk';
                     obj.vid.ROIPosition = [384 368 1280 800];
@@ -76,6 +77,9 @@ classdef camera < handle
                     obj.vid.DiskLogger = diskLogger;
                 end
             end
+        end
+        function obj = set_frame_grab_interval(obj, interval)
+            obj.vid.FrameGrabInterval = interval;
         end
     end
 end
