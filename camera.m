@@ -8,25 +8,24 @@ classdef camera < handle
         
     end
     methods
-        function obj = camera(cam_model, exposure )
+        function obj = camera(cam_model, exposure, framerate, frame_grab_interval)
             hw_status = imaqhwinfo;
             if strcmp(cam_model, 'blackfly_s')
                 if ismember(obj.blackfly_s_cam, hw_status.InstalledAdaptors)
                     device_id = cell2mat(imaqhwinfo(obj.blackfly_s_cam).DeviceIDs);
                     obj.model = 'blackfly_s';
                     obj.vid = videoinput(obj.blackfly_s_cam, device_id, 'Mono16');
-                    obj.vid.FramesPerTrigger = Inf;
-                    obj.vid.FrameGrabInterval = 1;
+                    obj.vid.FramesPerTrigger = inf; 
                     obj.vid.ReturnedColorspace = 'grayscale';
-                    obj.vid.LoggingMode = 'disk';
+                    obj.vid.LoggingMode = 'memory';
                     obj.vid.ROIPosition = [384 368 1280 800];
                     triggerconfig(obj.vid, 'immediate');
-                    
+
                     obj.src = getselectedsource(obj.vid);
                     obj.src.AdcBitDepth = 'Bit12';
                     obj.src.AcquisitionFrameRateEnable = 'True';
                     % if strcmp(obj.mode, 'Mono16')
-                    obj.src.AcquisitionFrameRate = 45;  % currently preset to Mono16
+                    obj.src.AcquisitionFrameRate = framerate;  % currently preset to Mono16
                     % else
                     %     obj.src.AcquisitionFrameRate = 60;
                     % end
@@ -78,8 +77,8 @@ classdef camera < handle
                 end
             end
         end
-        function obj = set_frame_grab_interval(obj, interval)
-            obj.vid.FrameGrabInterval = interval;
-        end
+        %function obj = set_frame_grab_interval(obj, interval)
+        %    obj.vid.FrameGrabInterval = interval;
+        %end
     end
 end
