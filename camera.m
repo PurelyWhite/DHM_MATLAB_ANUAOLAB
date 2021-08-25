@@ -15,6 +15,10 @@ classdef camera < handle
                     device_id = cell2mat(imaqhwinfo(obj.blackfly_s_cam).DeviceIDs);
                     obj.model = 'blackfly_s';
                     obj.vid = videoinput(obj.blackfly_s_cam, device_id, 'Mono16');
+                    
+                    preview(obj.vid);
+                    closepreview(obj.vid);
+                    
                     obj.vid.FramesPerTrigger = inf; 
                     obj.vid.ReturnedColorspace = 'grayscale';
                     obj.vid.LoggingMode = 'memory';
