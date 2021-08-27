@@ -6,9 +6,9 @@ classdef recorder < handle
         function obj = recorder()
         end
         
-        function save_frame(obj, s, event)
-            frame = uint8(peekdata(s,1));
-            size(frame)
+        function save_frame(obj, camera, ~)
+            frame = im2uint8(peekdata(camera,1));
+            size(frame);
             writeVideo(obj.diskLogger, frame);
         end
         
