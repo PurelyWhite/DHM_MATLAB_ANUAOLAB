@@ -7,28 +7,21 @@ classdef recorder < handle
         end
         
         function save_frame(obj, camera, ~)
-            frame = im2uint8(peekdata(camera,1));
-            size(frame);
-            writeVideo(obj.diskLogger, frame);
+            obj.diskLogger(im2uint8(peekdata(camera,1)));
         end
         
         function start(obj, camera, filepath, frame_grab_interval)
             obj.diskLogger = VideoWriter(filepath, 'Grayscale AVI');
-            if strcmp(camera.model, 'blackfly_s')
-                obj.diskLogger.FrameRate = camera.src.AcquisitionFrameRate;
-            end
-            %camera.vid.DiskLogger = obj.diskLogger;
-            
+            obj.diskLogger = vision.VideoFileWriter(filepath, 'FrameRate',camera.src.AcquisitionFrameRate/frame_grab_interval);
             
             camera.vid.FramesAcquiredFcnCount = frame_grab_interval;
             camera.vid.FramesAcquiredFcn = @obj.save_frame;
             
             start(camera.vid);
-            open(obj.diskLogger);
         end
         function stop(obj, camera)
             stop(camera.vid);
-            close(obj.diskLogger);
+            release(obj.diskLogger);
         end
         function [frame] = snap(~, camera)
             frame = getsnapshot(camera.vid);
