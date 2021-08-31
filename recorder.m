@@ -25,11 +25,10 @@ classdef recorder < handle
             camera.vid.FramesAcquiredFcn = @obj.save_frame;
             
             start(camera.vid);
-            open(obj.diskLogger);
         end
         function stop(obj, camera)
             stop(camera.vid);
-            close(obj.diskLogger);
+            release(obj.diskLogger);
         end
         function [frame] = snap(~, camera)
             frame = getsnapshot(camera.vid);
