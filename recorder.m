@@ -1,7 +1,7 @@
 classdef recorder < handle
     properties
         diskLogger % disk object
-        first = true
+        
         filepath
     end
     methods
@@ -25,10 +25,11 @@ classdef recorder < handle
             camera.vid.FramesAcquiredFcn = @obj.save_frame;
             
             start(camera.vid);
+            open(obj.diskLogger);
         end
         function stop(obj, camera)
             stop(camera.vid);
-            release(obj.diskLogger);
+            close(obj.diskLogger);
         end
         function [frame] = snap(~, camera)
             frame = getsnapshot(camera.vid);
