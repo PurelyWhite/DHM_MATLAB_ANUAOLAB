@@ -403,9 +403,7 @@ classdef reconstructor
             % digitally refocus
             [imx,imy]=size(centreimg);
             
-            pixel_size = pixel_size * 1e-6;
-            wavelength = wavelength *(10^-9);
-            digital_refocus_distance = digital_refocus_distance * 1e-6;
+            wavelength = wavelength *(10^-3);
            
             kx0=linspace(-pi/pixel_size,pi/pixel_size,imy); 
             ky0=linspace(-pi/pixel_size,pi/pixel_size,imx);
