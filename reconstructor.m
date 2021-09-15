@@ -179,9 +179,7 @@ classdef reconstructor
             % digitally refocus
             [imx,imy]=size(centreimg);
             
-            pixel_size = pixel_size * 1e-6;
-            wavelength = wavelength *(10^-9);
-            digital_refocus_distance = digital_refocus_distance * 1e-6;
+            wavelength = wavelength *(10^-3);
            
             kx0=linspace(-pi/pixel_size,pi/pixel_size,imy); 
             ky0=linspace(-pi/pixel_size,pi/pixel_size,imx);
@@ -248,7 +246,6 @@ classdef reconstructor
             intensity_no_curve = intensity; % - curve_intensity;
             
             % thickness calculation
-            wavelength = wavelength * 10^(-3);
             refractive_index_diff = ri;
             factor = wavelength/(2*pi*refractive_index_diff);
             thickness = (factor * phase_unwrap_no_curve);
